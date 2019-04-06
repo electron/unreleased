@@ -12,19 +12,10 @@ app.use(bodyParser.json())
 
 app.use(express.static('public'))
 
-app.post('/audit', (req, res) => {
-  const respond = (data) => {
-    const r = https.request({
-      ...url.parse(req.body.response_url),
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json'
-      }
-    })
-    r.end(JSON.stringify(data))
-  }
+app.post('/audit', async (req, res) => {
   const branch = req.body.text
-  async function go() {
+
+  try {
     let response
     const commits = await fetchUnreleasedCommits(branch)
     if (commits.length === 0) {
@@ -33,20 +24,31 @@ app.post('/audit', (req, res) => {
       response = `Unreleased commits in *${branch}*:\n${commits.map(c => `- \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${linkifyPRs(c.commit.message.split(/[\r\n]/)[0])}`).join('\n')}`
     }
   
-    return respond({
+    postToSlack({
       response_type: 'in_channel',
       text: response
-    })
-  }
-  go().catch(e => {
-    return respond({
+    }, req.body.response_url)
+
+    return res.status(200).end()
+  } catch (err) {
+    return postToSlack({
       response_type: 'ephemeral',
-      text: `Error: ${e}`
-    })
-  })
-  return res.status(200).end()
+      text: `Error: ${err}`
+    }, req.body.response_url)
+  }
 })
 
 const listener = app.listen(process.env.PORT, () => {
-  console.log('Your app is listening on port ' + listener.address().port);
+  console.log(`electron-unreleased-commits listening on ${listener.address().port}`)
 })
+
+const postToSlack = (data, postUrl) => {
+  const r = https.request({
+    ...url.parse(postUrl),
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json'
+    }
+  })
+  r.end(JSON.stringify(data))
+}
