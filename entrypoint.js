@@ -1,5 +1,5 @@
 const { Toolkit } = require('actions-toolkit')
-const IncomingWebhook = require('@slack/webhook')
+const { WebClient } = require('@slack/web-api')
 const url = require('url')
 const fetch = require('node-fetch')
 
@@ -7,20 +7,25 @@ const GH_API_PREFIX = 'https://api.github.com'
 const ORGANIZATION_NAME = 'electron'
 const REPO_NAME = 'electron'
 
-const ACCESS_TOKEN = process.env.GH_ACCESS_TOKEN
+const GH_ACCESS_TOKEN = process.env.GH_ACCESS_TOKEN
+const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN
 
-const SLACK_CHANNEL_URL = process.env.SLACK_WEBHOOK_URL
-const webhook = new IncomingWebhook(SLACK_CHANNEL_URL)
+const slackWebClient =  new WebClient(SLACK_BOT_TOKEN)
 
 Toolkit.run(async tools => {
   const branches = tools.arguments._[0].split(',') || 'master'
   for (const branch of branches) {
-    const commits = await fetchUnreleasedCommits(branchName)
-    const response = `Unreleased commits in *${branchName}*:\n${commits.map(c => {
+    const commits = await fetchUnreleasedCommits(branch)
+    const response = `Unreleased commits in *${branch}*:\n${commits.map(c => {
       `- \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${linkifyPRs(c.commit.message.split(/[\r\n]/)[0])}`
     }).join('\n')}`
 
-    await webhook.send({ text: response });
+    const result = await slackWebClient.chat.postMessage(JSON.parse(response))
+    if (result.ok === "true") {
+      tools.exit.success(`Audit message sent for ${branch} 🚀`)
+    } else {
+      tools.exit.failure(`Unable to send audit info for ${branch}: ` + postResult.error)
+    }
   }
 },{
   secrets: ['GH_ACCESS_TOKEN']
@@ -36,7 +41,7 @@ async function* getAllGenerator(urlEndpoint) {
   let next = urlEndpoint
   while (true) {
     const resp = await fetch(next, { 
-      headers: { Authorization: `token ${ACCESS_TOKEN}` }
+      headers: { Authorization: `token ${GH_ACCESS_TOKEN}` }
     })
 
     if (!resp.ok) {
@@ -59,17 +64,6 @@ async function* getAllGenerator(urlEndpoint) {
     if (!next_link) break
     next = next_link[0].trim().slice(1, -1)
   }
-}
-
-const postToSlack = (data) => {
-  const r = https.request({
-    ...url.parse(req.body.response_url),
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json'
-    }
-  })
-  r.end(JSON.stringify(data))
 }
 
 function linkifyPRs(msg) {
