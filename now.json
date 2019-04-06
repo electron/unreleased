@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "name": "electron-unreleased-audit",
+  "builds": [
+      { "src": "**/*.js", "use": "@now/node" }
+  ]
+}
