@@ -6,7 +6,7 @@ const GH_API_PREFIX = 'https://api.github.com'
 const ORGANIZATION_NAME = 'electron'
 const REPO_NAME = 'electron'
 
-const GH_ACCESS_TOKEN = process.env.GH_ACCESS_TOKEN
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN
 
 const slackWebClient =  new WebClient(SLACK_BOT_TOKEN)
@@ -30,6 +30,8 @@ Toolkit.run(async tools => {
       tools.exit.failure(`Unable to send audit info for ${branch}: ` + postResult.error)
     }
   }
+}, {
+  secrets: ['GITHUB_TOKEN', 'SLACK_BOT_TOKEN']
 })
 
 async function getAll(urlEndpoint) {
@@ -42,7 +44,7 @@ async function* getAllGenerator(urlEndpoint) {
   let next = urlEndpoint
   while (true) {
     const resp = await fetch(next, { 
-      headers: { Authorization: `token ${GH_ACCESS_TOKEN}` }
+      headers: { Authorization: `token ${GITHUB_TOKEN}` }
     })
 
     if (!resp.ok) {
