@@ -21,7 +21,10 @@ app.post('/audit', async (req, res) => {
     if (commits.length === 0) {
       response = `*No unreleased commits on ${branch}*`
     } else {
-      response = `Unreleased commits in *${branch}*:\n${commits.map(c => `- \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${linkifyPRs(c.commit.message.split(/[\r\n]/)[0])}`).join('\n')}`
+      const formattedCommits = commits.map(c => { 
+        return `- \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${linkifyPRs(c.commit.message.split(/[\r\n]/)[0])}` 
+      }).join('\n')
+      response = `Unreleased commits in *${branch}*:\n${formattedCommits}`
     }
   
     postToSlack({
