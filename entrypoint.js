@@ -19,7 +19,11 @@ Toolkit.run(async tools => {
     const commits = await fetchUnreleasedCommits(branch)
     tools.log.info(`Found ${commits.length} commits on ${branch}`)
 
-    const response = `Unreleased commits in *${branch}*:\n${commits.map(c => `- \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${linkifyPRs(c.commit.message.split(/[\r\n]/)[0])}`).join('\n')}`
+    if (commits.length === 0) {
+      response = `*No unreleased commits on ${branch}*`
+    } else {
+      response = `Unreleased commits in *${branch}*:\n${commits.map(c => `- \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${linkifyPRs(c.commit.message.split(/[\r\n]/)[0])}`).join('\n')}`
+    }
 
     const result = await slackWebClient.chat.postMessage({
       channel: '#wg-releases',
