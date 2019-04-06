@@ -1,7 +1,7 @@
 const { Toolkit } = require('actions-toolkit')
 const { WebClient } = require('@slack/web-api')
 
-const { fetchUnreleasedCommits, linkifyPRs } = require('index.js')
+const { fetchUnreleasedCommits, linkifyPRs } = require('./utils')
 
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN
 
