@@ -42,11 +42,12 @@ async function getAll(urlEndpoint) {
 
 async function* getAllGenerator(urlEndpoint) {
   let next = urlEndpoint
+
   while (true) {
     const resp = await fetch(next, { 
       headers: { Authorization: `token ${GITHUB_TOKEN}` }
     })
-
+    
     if (!resp.ok) {
       if (resp.headers.get('x-ratelimit-remaining') === '0') {
         const resetTime = Math.round(resp.headers.get('x-ratelimit-reset') - Date.now() / 1000)
@@ -58,6 +59,7 @@ async function* getAllGenerator(urlEndpoint) {
     const json = await resp.json()
     yield *json
     if (!resp.headers.get('link')) break
+    throw new Error(resp)
     const next_link = resp.headers.get('link').split(/,/).map(x => { 
       x.split(/;/)
     }).find(x => {
@@ -74,10 +76,10 @@ function linkifyPRs(msg) {
     `<https://github.com/${ORGANIZATION_NAME}/${REPO_NAME}/pull/${pr_id}|#${pr_id}>`)
 }
 
-async function fetchUnreleasedCommits(branchName) {
+async function fetchUnreleasedCommits(branch) {
   const tags = await getAll(`${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/tags`)
   const unreleased = []
-  const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/commits?sha=${branchName}`
+  const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/commits?sha=${branch}`
 
   for await (const commit of getAllGenerator(url)) {
     const tag = tags.find(t => t.commit.sha === commit.sha)
