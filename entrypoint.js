@@ -27,11 +27,12 @@ Toolkit.run(async tools => {
     })
 
     if (result.ok) {
-      tools.exit.success(`Audit message sent for ${branch} 🚀`)
+      tools.log.info(`Audit message sent for ${branch} 🚀`)
     } else {
       tools.exit.failure(`Unable to send audit info for ${branch}: ` + result.error)
     }
   }
+  tools.exit.success(`All release branches audited`)
 }, {
   secrets: ['GITHUB_TOKEN', 'SLACK_BOT_TOKEN']
 })
