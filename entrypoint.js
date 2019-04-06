@@ -1,6 +1,5 @@
 const { Toolkit } = require('actions-toolkit')
 const { WebClient } = require('@slack/web-api')
-const url = require('url')
 const fetch = require('node-fetch')
 
 const GH_API_PREFIX = 'https://api.github.com'
@@ -15,7 +14,11 @@ const slackWebClient =  new WebClient(SLACK_BOT_TOKEN)
 Toolkit.run(async tools => {
   const branches = tools.arguments._[0].split(',') || 'master'
   for (const branch of branches) {
+    tools.log.info(`Auditing branch ${branch}`)
+
     const commits = await fetchUnreleasedCommits(branch)
+    tools.log.info(`Found ${commits.length} commits on ${branch}`)
+
     const response = `Unreleased commits in *${branch}*:\n${commits.map(c => {
       `- \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${linkifyPRs(c.commit.message.split(/[\r\n]/)[0])}`
     }).join('\n')}`
@@ -27,8 +30,6 @@ Toolkit.run(async tools => {
       tools.exit.failure(`Unable to send audit info for ${branch}: ` + postResult.error)
     }
   }
-},{
-  secrets: ['GH_ACCESS_TOKEN']
 })
 
 async function getAll(urlEndpoint) {
