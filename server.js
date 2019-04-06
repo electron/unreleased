@@ -25,7 +25,11 @@ app.post('/audit', async (req, res) => {
         const prLink = linkifyPRs(c.commit.message.split(/[\r\n]/)[0])
         return `- \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${prLink}` 
       }).join('\n')
-      response = `Unreleased commits in *${branch}*:\n${formattedCommits}`
+
+      response = `Unreleased commits in *${branch}* (from <@${req.body.user_id}>):\n${formattedCommits}`
+      if (commits.length >= 10) {
+        response += `\n <@wg-releases>, there are a lot of unreleased commits on ${branch}! Time for a release?`
+      }
     }
   
     postToSlack({

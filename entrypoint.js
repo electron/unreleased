@@ -18,7 +18,16 @@ Toolkit.run(async tools => {
     if (commits.length === 0) {
       response = `*No unreleased commits on ${branch}*`
     } else {
-      response = `Unreleased commits in *${branch}*:\n${commits.map(c => `- \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${linkifyPRs(c.commit.message.split(/[\r\n]/)[0])}`).join('\n')}`
+      const formattedCommits = commits.map(c => {
+        const prLink = linkifyPRs(c.commit.message.split(/[\r\n]/)[0])
+        return `- \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${prLink}` 
+      }).join('\n')
+
+      response = `Unreleased commits in *${branch}* (*automatic audit*):\n${formattedCommits}`
+
+      if (commits.length >= 10) {
+        response += `\n <@wg-releases>, there are a lot of unreleased commits on ${branch}! Time for a release?`
+      }
     }
 
     const result = await slackWebClient.chat.postMessage({
