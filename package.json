@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Checks for and reports commits unreleased for all currently supported branches.",
   "scripts": {
-    "start": "micro"
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
@@ -18,8 +18,12 @@
   "dependencies": {
     "@slack/web-api": "^5.0.0",
     "actions-toolkit": "^2.0.0",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "https": "^1.0.0",
     "micro": "^9.3.3",
     "node-fetch": "^2.3.0",
-    "querystring": "^0.2.0"
+    "querystring": "^0.2.0",
+    "url": "^0.11.0"
   }
 }
