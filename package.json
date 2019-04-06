@@ -1,0 +1,25 @@
+{
+  "name": "unreleased",
+  "version": "1.0.0",
+  "description": "Checks for and reports commits unreleased for a specific release branch",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/electron/unreleased.git"
+  },
+  "author": "Electron Community",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/electron/unreleased/issues"
+  },
+  "homepage": "https://github.com/electron/unreleased#readme",
+  "dependencies": {
+    "express": "^4.16.4",
+    "fetch": "^1.1.0",
+    "node-fetch": "^2.3.0",
+    "url": "^0.11.0"
+  }
+}
