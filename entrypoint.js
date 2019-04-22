@@ -4,7 +4,6 @@ const { WebClient } = require('@slack/web-api')
 const { fetchUnreleasedCommits, linkifyPRs } = require('./utils')
 
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN
-
 const slackWebClient =  new WebClient(SLACK_BOT_TOKEN)
 
 Toolkit.run(async tools => {
@@ -12,6 +11,7 @@ Toolkit.run(async tools => {
   for (const branch of branches) {
     tools.log.info(`Auditing branch ${branch}`)
 
+    let response
     const commits = await fetchUnreleasedCommits(branch)
     tools.log.info(`Found ${commits.length} commits on ${branch}`)
 
@@ -23,10 +23,10 @@ Toolkit.run(async tools => {
         return `- \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${prLink}` 
       }).join('\n')
 
-      response = `Unreleased commits in *${branch}* (*automatic audit*):\n${formattedCommits}`
-
+      response = `Unreleased commits in *${branch}* (automatic audit):\n${formattedCommits}`
       if (commits.length >= 10) {
-        response += `\n <@wg-releases>, there are a lot of unreleased commits on ${branch}! Time for a release?`
+        tools.log.info(`Reached ${commits.length} commits on ${branch}, time to release.`)
+        response += `\n <@wg-releases>, there are a lot of unreleased commits on \`${branch}\`! Time for a release?`
       }
     }
 
