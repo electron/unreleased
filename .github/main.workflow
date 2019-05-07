@@ -5,6 +5,6 @@ workflow "Check Unreleased Commits" {
 
 action "Check unreleased commits" {
   uses = "./"
-  args = "5-0-x,4-1-x,3-1-x"
+  args = "6-0-x,5-0-x,4-2-x,3-1-x"
   secrets = ["GITHUB_TOKEN", "SLACK_BOT_TOKEN"]
 }
