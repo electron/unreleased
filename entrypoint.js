@@ -1,13 +1,13 @@
 const { Toolkit } = require('actions-toolkit')
 const { WebClient } = require('@slack/web-api')
 
-const { fetchUnreleasedCommits, linkifyPRs } = require('./utils')
+const { fetchUnreleasedCommits, linkifyPRs, getSupportedBranches } = require('./utils')
 
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN
 const slackWebClient =  new WebClient(SLACK_BOT_TOKEN)
 
 Toolkit.run(async tools => {
-  const branches = tools.arguments._[0].split(',') || 'master'
+  const branches = await getSupportedBranches()
   for (const branch of branches) {
     tools.log.info(`Auditing branch ${branch}`)
 

@@ -58,7 +58,22 @@ async function fetchUnreleasedCommits(branch) {
   return unreleased
 }
 
+async function getSupportedBranches() {
+  const branchEndpoint = `${GH_API_PREFIX}/repos/electron/electron/branches`
+  const resp = await fetch(branchEndpoint)
+
+  let branches = await resp.json()
+  branches = branches.filter(branch => {
+    return branch.protected && branch.name.match(/[0-9]-[0-9]-x/)
+  }).map(b => b.name)
+
+  const filtered = {}
+  branches.forEach(branch => filtered[branch.charAt(0)] = branch)
+  return Object.values(filtered).slice(-4)
+}
+
 module.exports = {
+  getSupportedBranches,
   linkifyPRs,
   fetchUnreleasedCommits
 }
