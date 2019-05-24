@@ -4,6 +4,7 @@ const GH_API_PREFIX = 'https://api.github.com'
 const ORGANIZATION_NAME = 'electron'
 const REPO_NAME = 'electron'
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN
+const NUM_SUPPORTED_VERSIONS = 4
 
 async function getAll(urlEndpoint) {
   const objects = []
@@ -68,8 +69,8 @@ async function getSupportedBranches() {
   }).map(b => b.name)
 
   const filtered = {}
-  branches.forEach(branch => filtered[branch.charAt(0)] = branch)
-  return Object.values(filtered).slice(-4)
+  branches.sort().forEach(branch => filtered[branch.charAt(0)] = branch)
+  return Object.values(filtered).slice(-NUM_SUPPORTED_VERSIONS)
 }
 
 module.exports = {
