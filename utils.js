@@ -4,6 +4,7 @@ const GH_API_PREFIX = 'https://api.github.com'
 const ORGANIZATION_NAME = 'electron'
 const REPO_NAME = 'electron'
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN
+const NUM_SUPPORTED_VERSIONS = 4
 
 async function getAll(urlEndpoint) {
   const objects = []
@@ -58,7 +59,22 @@ async function fetchUnreleasedCommits(branch) {
   return unreleased
 }
 
+async function getSupportedBranches() {
+  const branchEndpoint = `${GH_API_PREFIX}/repos/electron/electron/branches`
+  const resp = await fetch(branchEndpoint)
+
+  let branches = await resp.json()
+  branches = branches.filter(branch => {
+    return branch.protected && branch.name.match(/[0-9]-[0-9]-x/)
+  }).map(b => b.name)
+
+  const filtered = {}
+  branches.sort().forEach(branch => filtered[branch.charAt(0)] = branch)
+  return Object.values(filtered).slice(-NUM_SUPPORTED_VERSIONS)
+}
+
 module.exports = {
+  getSupportedBranches,
   linkifyPRs,
   fetchUnreleasedCommits
 }
