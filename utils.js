@@ -53,14 +53,23 @@ async function fetchUnreleasedCommits(branch) {
 
   for await (const commit of getAllGenerator(url)) {
     const tag = tags.find(t => t.commit.sha === commit.sha)
-    if (tag) break
+    if (tag) {
+      const isDraft =  await releaseIsDraft(tag.name)
+      if (!isDraft) break
+    }
     unreleased.push(commit)
   }
   return unreleased
 }
 
+async function releaseIsDraft(tag) {
+  const releaseEndpoint = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/releases/tags/${tag}`
+  const res = await fetch(releaseEndpoint)
+  return res.status === 404
+}
+
 async function getSupportedBranches() {
-  const branchEndpoint = `${GH_API_PREFIX}/repos/electron/electron/branches`
+  const branchEndpoint = `${GH_API_PREFIX}/${ORGANIZATION_NAME}/${REPO_NAME}/branches`
   const resp = await fetch(branchEndpoint)
 
   let branches = await resp.json()
@@ -72,7 +81,6 @@ async function getSupportedBranches() {
   branches.sort().forEach(branch => filtered[branch.charAt(0)] = branch)
   return Object.values(filtered).slice(-NUM_SUPPORTED_VERSIONS)
 }
-
 module.exports = {
   getSupportedBranches,
   linkifyPRs,
