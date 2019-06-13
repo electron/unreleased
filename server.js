@@ -15,6 +15,13 @@ app.use(express.static('public'))
 app.post('/audit', async (req, res) => {
   const branch = req.body.text
 
+  if (!branch.match(/[0-9]+-[0-9]+-x/)) {
+    return postToSlack({
+      response_type: 'ephemeral',
+      text: 'Branch name not valid. Try again?'
+    }, req.body.response_url)
+  }
+
   try {
     let response
     const commits = await fetchUnreleasedCommits(branch)
