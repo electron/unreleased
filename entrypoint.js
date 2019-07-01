@@ -26,7 +26,7 @@ Toolkit.run(async tools => {
       response = `Unreleased commits in *${branch}* (automatic audit):\n${formattedCommits}`
       if (commits.length >= 10) {
         tools.log.info(`Reached ${commits.length} commits on ${branch}, time to release.`)
-        response += `\n <@wg-releases>, there are a lot of unreleased commits on \`${branch}\`! Time for a release?`
+        response += `\n <@releases-wg>, there are a lot of unreleased commits on \`${branch}\`! Time for a release?`
       }
     }
 
