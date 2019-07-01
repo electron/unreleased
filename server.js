@@ -35,7 +35,7 @@ app.post('/audit', async (req, res) => {
 
       response = `Unreleased commits in *${branch}* (from <@${req.body.user_id}>):\n${formattedCommits}`
       if (commits.length >= 10) {
-        response += `\n <@wg-releases>, there are a lot of unreleased commits on \`${branch}\`! Time for a release?`
+        response += `\n <@releases-wg>, there are a lot of unreleased commits on \`${branch}\`! Time for a release?`
       }
     }
   
