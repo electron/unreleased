@@ -5,6 +5,7 @@ const ORGANIZATION_NAME = 'electron'
 const REPO_NAME = 'electron'
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN
 const NUM_SUPPORTED_VERSIONS = 4
+const SLACK_USER = 'releases-wg'
 
 async function getAll(urlEndpoint) {
   const objects = []
@@ -46,6 +47,21 @@ function linkifyPRs(msg) {
     `<https://github.com/${ORGANIZATION_NAME}/${REPO_NAME}/pull/${pr_id}|#${pr_id}>`)
 }
 
+function buildCommitsMessage(branch, commits, initiatedBy) {
+  if (!commits || commits.length === 0) return `*No unreleased commits on ${branch}*`
+
+  const formattedCommits = commits.map(c => {
+    const prLink = linkifyPRs(c.commit.message.split(/[\r\n]/, 1)[0])
+    return `- \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${prLink}`
+  }).join('\n')
+
+  let response = `Unreleased commits in *${branch}* (from ${initiatedBy}):\n${formattedCommits}`
+  if (commits.length >= 10) {
+    response += `\n <@${SLACK_USER}>, there are a lot of unreleased commits on \`${branch}\`! Time for a release?`
+  }
+  return response
+}
+
 async function fetchUnreleasedCommits(branch) {
   const tags = await getAll(`${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/tags`)
   const unreleased = []
@@ -82,7 +98,7 @@ async function getSupportedBranches() {
   return Object.values(filtered).slice(-NUM_SUPPORTED_VERSIONS)
 }
 module.exports = {
-  getSupportedBranches,
-  linkifyPRs,
-  fetchUnreleasedCommits
+  buildCommitsMessage,
+  fetchUnreleasedCommits,
+  getSupportedBranches
 }
