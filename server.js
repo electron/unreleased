@@ -14,18 +14,29 @@ app.use(express.static('public'))
 // not been released in a beta or stable.
 app.post('/audit', async (req, res) => {
   const initiatedBy = `<@${req.body.user_id}>`
-  const branch = req.body.text
+  const auditTarget = req.body.text
 
-  if (!branch.match(/[0-9]+-[0-9]+-x/)) {
+  // Allow for manual batch audit of all supported release branches
+  if (auditTarget === 'all') {
+    const branches = await getSupportedBranches()
+    let status
+    for (const branch of branches) {
+      status = createCommitData(branch, initiatedBy)
+    }
+    return status
+  } else if (!auditTarget.match(/[0-9]+-[0-9]+-x/)) {
     return postToSlack({
       response_type: 'ephemeral',
       text: 'Branch name not valid. Try again?'
     }, req.body.response_url)
   }
 
+  return createCommitData(auditTarget, initiatedBy)
+})
+
+function createCommitData(branch, initiatedBy) {
   try {
     const commits = await fetchUnreleasedCommits(branch)
-  
     postToSlack({
       response_type: 'in_channel',
       text: buildCommitsMessage(branch, commits, initiatedBy)
@@ -38,7 +49,7 @@ app.post('/audit', async (req, res) => {
       text: `Error: ${err}`
     }, req.body.response_url)
   }
-})
+}
 
 const listener = app.listen(process.env.PORT, () => {
   console.log(`electron-unreleased-commits listening on ${listener.address().port}`)

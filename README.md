@@ -17,3 +17,9 @@ Example:
 ```sh
 /check-unreleased 5-0-x
 ```
+
+To manually query the status of all [currently supported](https://electronjs.org/docs/tutorial/support) Electron release branches:
+
+```sh
+/check-unreleases all
+```
