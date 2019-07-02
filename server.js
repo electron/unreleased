@@ -4,7 +4,7 @@ const url = require('url')
 const express = require('express')
 const bodyParser = require('body-parser')
 
-const { buildCommitsMessage, fetchUnreleasedCommits } = require ('./utils')
+const { buildCommitsMessage, fetchUnreleasedCommits } = require ('./utils/commits')
 
 const app = express()
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -12,6 +12,8 @@ app.use(bodyParser.json())
 
 app.use(express.static('public'))
 
+// Check for commits which have been merged to a release branch but
+// not been released in a beta or stable.
 app.post('/audit', async (req, res) => {
   const initiatedBy = `<@${req.body.user_id}>`
   const branch = req.body.text

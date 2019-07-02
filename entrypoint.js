@@ -1,9 +1,10 @@
 const { Toolkit } = require('actions-toolkit')
 const { WebClient } = require('@slack/web-api')
 
-const { buildCommitsMessage, fetchUnreleasedCommits, getSupportedBranches } = require('./utils')
+const { buildCommitsMessage, fetchUnreleasedCommits } = require('./utils/commits')
+const { getSupportedBranches } = require('./utils/helpers')
+const { SLACK_BOT_TOKEN } = require('./constants')
 
-const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN
 const slackWebClient =  new WebClient(SLACK_BOT_TOKEN)
 
 Toolkit.run(async tools => {
