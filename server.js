@@ -1,14 +1,45 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 
-const { buildCommitsMessage, fetchUnreleasedCommits } = require ('./utils/commits')
-const { postToSlack, getSupportedBranches } = require('./utils/helpers')
+const { buildUnreleasedCommitsMessage, fetchUnreleasedCommits } = require ('./utils/unreleased-commits')
+const { buildUnmergedPRsMessage, fetchUnmergedPRs } = require('./utils/unmerged-commits')
+const { postToSlack, getSupportedBranches } = require('./utils/commits-helpers')
 
 const app = express()
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json())
 
 app.use(express.static('public'))
+
+// Check for pull requests targeting a specified release branch/
+// that have not yet been merged.
+app.post('/unmerged', async (req, res) => {
+  const initiatedBy = `<@${req.body.user_id}>`
+  const branch = req.body.text
+
+  if (!branch.match(/[0-9]+-[0-9]+-x/)) {
+    return postToSlack({
+      response_type: 'ephemeral',
+      text: 'Branch name not valid. Try again?'
+    }, req.body.response_url)
+  }
+
+  try {
+    const prs = await fetchUnmergedPRs(branch)
+
+    postToSlack({
+      response_type: 'in_channel',
+      text: buildUnmergedPRsMessage(branch, prs, initiatedBy)
+    }, req.body.response_url)
+
+    return res.status(200).end()
+  } catch (err) {
+    return postToSlack({
+      response_type: 'ephemeral',
+      text: `Error: ${err}`
+    }, req.body.response_url)
+  }
+})
 
 // Check for commits which have been merged to a release branch but
 // not been released in a beta or stable.
@@ -55,7 +86,7 @@ app.post('/audit', async (req, res) => {
 
     postToSlack({
       response_type: 'in_channel',
-      text: buildCommitsMessage(auditTarget, commits, initiatedBy)
+      text: buildUnreleasedCommitsMessage(branch, commits, initiatedBy)
     }, req.body.response_url)
 
     return res.status(200).end()
