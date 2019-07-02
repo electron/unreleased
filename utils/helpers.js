@@ -1,4 +1,7 @@
 const fetch = require('node-fetch')
+const https = require('https')
+const url = require('url')
+
 const {
   ORGANIZATION_NAME,
   REPO_NAME,
@@ -35,8 +38,21 @@ async function getSupportedBranches() {
   return Object.values(filtered).slice(-NUM_SUPPORTED_VERSIONS)
 }
 
+// Post a message to a Slack workspace
+const postToSlack = (data, postUrl) => {
+  const r = https.request({
+    ...url.parse(postUrl),
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json'
+    }
+  })
+  r.end(JSON.stringify(data))
+}
+
 module.exports = {
   releaseIsDraft,
   getSupportedBranches,
-  linkifyPRs
+  linkifyPRs,
+  postToSlack
 }

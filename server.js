@@ -1,10 +1,8 @@
-const https = require('https')
-const url = require('url')
-
 const express = require('express')
 const bodyParser = require('body-parser')
 
 const { buildCommitsMessage, fetchUnreleasedCommits } = require ('./utils/commits')
+const { postToSlack } = require('./utils/commits')
 
 const app = express()
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -45,14 +43,3 @@ app.post('/audit', async (req, res) => {
 const listener = app.listen(process.env.PORT, () => {
   console.log(`electron-unreleased-commits listening on ${listener.address().port}`)
 })
-
-const postToSlack = (data, postUrl) => {
-  const r = https.request({
-    ...url.parse(postUrl),
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json'
-    }
-  })
-  r.end(JSON.stringify(data))
-}
