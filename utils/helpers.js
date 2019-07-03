@@ -25,7 +25,7 @@ async function releaseIsDraft(tag) {
 // Get an array of Electron's currently supported branches
 // according to https://electronjs.org/docs/tutorial/support
 async function getSupportedBranches() {
-  const branchEndpoint = `${GH_API_PREFIX}/${ORGANIZATION_NAME}/${REPO_NAME}/branches`
+  const branchEndpoint = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/branches`
   const resp = await fetch(branchEndpoint)
 
   let branches = await resp.json()
