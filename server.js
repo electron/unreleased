@@ -3,7 +3,7 @@ const bodyParser = require('body-parser')
 
 const { buildUnreleasedCommitsMessage, fetchUnreleasedCommits } = require ('./utils/unreleased-commits')
 const { buildUnmergedPRsMessage, fetchUnmergedPRs } = require('./utils/unmerged-commits')
-const { postToSlack, getSupportedBranches } = require('./utils/commits-helpers')
+const { postToSlack, getSupportedBranches, postInvalidBranch } = require('./utils/helpers')
 
 const app = express()
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -15,13 +15,11 @@ app.use(express.static('public'))
 // that have not yet been merged.
 app.post('/unmerged', async (req, res) => {
   const initiatedBy = `<@${req.body.user_id}>`
-  const branch = req.body.text
 
+  const branch = req.body.text
   if (!branch.match(/[0-9]+-[0-9]+-x/)) {
-    return postToSlack({
-      response_type: 'ephemeral',
-      text: 'Branch name not valid. Try again?'
-    }, req.body.response_url)
+    console.log(`User initiated unmerged audit with invalid branch: ${branch}`)
+    return postInvalidBranch()
   }
 
   try {
@@ -70,12 +68,11 @@ app.post('/audit', async (req, res) => {
       }
     }
     return res.status(200).end()
-  } else if (!auditTarget.match(/[0-9]+-[0-9]+-x/)) {
-    console.log(`User initiated with invalid branch name ${auditTarget}`)
-    return postToSlack({
-      response_type: 'ephemeral',
-      text: 'Branch name not valid. Try again?'
-    }, req.body.response_url)
+  }
+  
+  if (!auditTarget.match(/[0-9]+-[0-9]+-x/)) {
+    console.log(`User initiated unreleased audit with invalid branch: ${auditTarget}`)
+    return postInvalidBranch()
   }
 
   console.log(`auditing branch ${branch}`)
