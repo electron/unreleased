@@ -4,8 +4,7 @@ const { linkifyPRs, releaseIsDraft } = require('./helpers')
 const {
   ORGANIZATION_NAME,
   REPO_NAME,
-  GH_API_PREFIX,
-  SLACK_USER
+  GH_API_PREFIX
 } = require('../constants')
 
 // Fetch all unreleased commits for a specified release line branch
@@ -37,7 +36,7 @@ function buildUnreleasedCommitsMessage(branch, commits, initiatedBy) {
 
   let response = `Unreleased commits in *${branch}* (from ${initiatedBy}):\n${formattedCommits}`
   if (commits.length >= 10) {
-    response += `\n <@${SLACK_USER}>, there are a lot of unreleased commits on \`${branch}\`! Time for a release?`
+    response += `\n *There are a lot of unreleased commits on \`${branch}\`! Time for a release?*`
   }
   return response
 }

@@ -3,8 +3,7 @@ const { getAllGenerator } = require('./commits-helpers')
 const {
   ORGANIZATION_NAME,
   REPO_NAME,
-  GH_API_PREFIX,
-  SLACK_USER
+  GH_API_PREFIX
 } = require('../constants')
 
 // Fetch all PRs targeting a specified release line branch that have NOT been merged
@@ -27,7 +26,7 @@ function buildUnmergedPRsMessage(branch, prs, initiatedBy) {
 
   let response = `Unreleased pull requests targeting *${branch}* (from ${initiatedBy}):\n${formattedPRs}`
   if (prs.length !== 0) {
-    response += `\n <@${SLACK_USER}>, there are unmerged PRs targeting \`${branch}\`! Are you sure you want to release?`
+    response += `\n *There are unmerged PRs targeting \`${branch}\`! Are you sure you want to release?*`
   }
   return response
 }
