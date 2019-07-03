@@ -2,7 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 
 const { buildCommitsMessage, fetchUnreleasedCommits } = require ('./utils/commits')
-const { postToSlack } = require('./utils/commits')
+const { postToSlack, getSupportedBranches } = require('./utils/helpers')
 
 const app = express()
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -14,9 +14,28 @@ app.use(express.static('public'))
 // not been released in a beta or stable.
 app.post('/audit', async (req, res) => {
   const initiatedBy = `<@${req.body.user_id}>`
-  const branch = req.body.text
+  const auditTarget = req.body.text
 
-  if (!branch.match(/[0-9]+-[0-9]+-x/)) {
+  // Allow for manual batch audit of all supported release branches
+  if (auditTarget === 'all') {
+    const branches = await getSupportedBranches()
+    for (const branch of branches) {
+      try {
+        const commits = await fetchUnreleasedCommits(branch)
+        postToSlack({
+          response_type: 'in_channel',
+          text: buildCommitsMessage(branch, commits, initiatedBy)
+        }, req.body.response_url)
+    
+        return res.status(200).end()
+      } catch (err) {
+        return postToSlack({
+          response_type: 'ephemeral',
+          text: `Error: ${err}`
+        }, req.body.response_url)
+      }
+    }
+  } else if (!auditTarget.match(/[0-9]+-[0-9]+-x/)) {
     return postToSlack({
       response_type: 'ephemeral',
       text: 'Branch name not valid. Try again?'
@@ -24,11 +43,10 @@ app.post('/audit', async (req, res) => {
   }
 
   try {
-    const commits = await fetchUnreleasedCommits(branch)
-  
+    const commits = await fetchUnreleasedCommits(auditTarget)
     postToSlack({
       response_type: 'in_channel',
-      text: buildCommitsMessage(branch, commits, initiatedBy)
+      text: buildCommitsMessage(auditTarget, commits, initiatedBy)
     }, req.body.response_url)
 
     return res.status(200).end()
@@ -38,6 +56,7 @@ app.post('/audit', async (req, res) => {
       text: `Error: ${err}`
     }, req.body.response_url)
   }
+
 })
 
 const listener = app.listen(process.env.PORT, () => {
