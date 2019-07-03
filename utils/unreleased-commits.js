@@ -1,51 +1,12 @@
-const fetch = require('node-fetch')
+const { getAll, getAllGenerator } = require('./commits-helpers')
 const { linkifyPRs, releaseIsDraft } = require('./helpers')
 
 const {
-  GITHUB_TOKEN,
   ORGANIZATION_NAME,
   REPO_NAME,
   GH_API_PREFIX,
   SLACK_USER
 } = require('../constants')
-
-// Formulate a list of all commits based on a certain url endpoint
-// for a release tag on Electron
-async function getAll(urlEndpoint) {
-  const objects = []
-  for await (const obj of getAllGenerator(urlEndpoint)) objects.push(obj)
-  return objects
-}
-
-// Generate and iterate through the JSON blob representing commits
-async function* getAllGenerator(urlEndpoint) {
-  let next = urlEndpoint
-  while (true) {
-    const resp = await fetch(next, {
-      headers: { Authorization: `token ${GITHUB_TOKEN}` }
-    })
-
-    if (!resp.ok) {
-      if (resp.headers.get('x-ratelimit-remaining') === '0') {
-        const resetTime = Math.round(resp.headers.get('x-ratelimit-reset') - Date.now() / 1000)
-        throw new Error(`Ratelimited. Resets in ${resetTime} seconds.`)
-      }
-      throw new Error(`${resp.status} ${resp.statusText}`)
-    }
-
-    const json = await resp.json()
-    yield* json
-
-    if (!resp.headers.get('link')) break
-    const next_link = resp.headers.get('link')
-      .split(/,/)
-      .map(x => x.split(/;/))
-      .find(x => x[1].includes('next'))
-
-    if (!next_link) break
-    next = next_link[0].trim().slice(1, -1)
-  }
-}
 
 // Fetch all unreleased commits for a specified release line branch
 async function fetchUnreleasedCommits(branch) {
@@ -66,7 +27,7 @@ async function fetchUnreleasedCommits(branch) {
 
 // Build the text blob that will be posted to Slack &
 // conditionally notify the release team if it's time to release
-function buildCommitsMessage(branch, commits, initiatedBy) {
+function buildUnreleasedCommitsMessage(branch, commits, initiatedBy) {
   if (!commits || commits.length === 0) return `*No unreleased commits on ${branch}*`
 
   const formattedCommits = commits.map(c => {
@@ -82,6 +43,6 @@ function buildCommitsMessage(branch, commits, initiatedBy) {
 }
 
 module.exports = {
-  buildCommitsMessage,
+  buildUnreleasedCommitsMessage,
   fetchUnreleasedCommits
 }
