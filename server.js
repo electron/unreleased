@@ -18,32 +18,41 @@ app.post('/audit', async (req, res) => {
 
   // Allow for manual batch audit of all supported release branches
   if (auditTarget === 'all') {
+    console.log(`Auditing all supported release branches`)
+
     const branches = await getSupportedBranches()
     for (const branch of branches) {
+      console.log(`auditing branch ${branch}`)
       try {
         const commits = await fetchUnreleasedCommits(branch)
+        console.log(`Found ${commits.length} commits on ${branch}`)
         postToSlack({
           response_type: 'in_channel',
           text: buildCommitsMessage(branch, commits, initiatedBy)
         }, req.body.response_url)
-    
-        return res.status(200).end()
       } catch (err) {
+        console.log(`Error: ${err}`)
         return postToSlack({
           response_type: 'ephemeral',
           text: `Error: ${err}`
         }, req.body.response_url)
       }
     }
+    return res.status(200).end()
   } else if (!auditTarget.match(/[0-9]+-[0-9]+-x/)) {
+    console.log(`User initiated with invalid branch name ${auditTarget}`)
     return postToSlack({
       response_type: 'ephemeral',
       text: 'Branch name not valid. Try again?'
     }, req.body.response_url)
   }
 
+  console.log(`auditing branch ${branch}`)
+
   try {
     const commits = await fetchUnreleasedCommits(auditTarget)
+    console.log(`Found ${commits.length} commits on ${branch}`)
+
     postToSlack({
       response_type: 'in_channel',
       text: buildCommitsMessage(auditTarget, commits, initiatedBy)
@@ -51,12 +60,12 @@ app.post('/audit', async (req, res) => {
 
     return res.status(200).end()
   } catch (err) {
+    console.log(`Error: ${err}`)
     return postToSlack({
       response_type: 'ephemeral',
       text: `Error: ${err}`
     }, req.body.response_url)
   }
-
 })
 
 const listener = app.listen(process.env.PORT, () => {
