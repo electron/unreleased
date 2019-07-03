@@ -38,8 +38,6 @@ async function getSupportedBranches() {
   return Object.values(filtered).slice(-NUM_SUPPORTED_VERSIONS)
 }
 
-/* SLACK HELPERS */
-
 // Post a message to a Slack workspace
 const postToSlack = (data, postUrl) => {
   const r = https.request({
@@ -52,18 +50,9 @@ const postToSlack = (data, postUrl) => {
   r.end(JSON.stringify(data))
 }
 
-// Post invalid branch message to Slack
-const postInvalidBranch = (req) => {
-  return postToSlack({
-    response_type: 'ephemeral',
-    text: 'Branch name not valid. Try again?'
-  }, req.body.response_url)
-}
-
 module.exports = {
   releaseIsDraft,
   getSupportedBranches,
   linkifyPRs,
-  postToSlack,
-  postInvalidBranch
+  postToSlack
 }

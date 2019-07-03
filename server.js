@@ -3,7 +3,7 @@ const bodyParser = require('body-parser')
 
 const { buildUnreleasedCommitsMessage, fetchUnreleasedCommits } = require ('./utils/unreleased-commits')
 const { buildUnmergedPRsMessage, fetchUnmergedPRs } = require('./utils/unmerged-commits')
-const { postToSlack, getSupportedBranches, postInvalidBranch } = require('./utils/helpers')
+const { postToSlack, getSupportedBranches } = require('./utils/helpers')
 
 const app = express()
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -11,7 +11,7 @@ app.use(bodyParser.json())
 
 app.use(express.static('public'))
 
-// Check for pull requests targeting a specified release branch/
+// Check for pull requests targeting a specified release branch
 // that have not yet been merged.
 app.post('/unmerged', async (req, res) => {
   const initiatedBy = `<@${req.body.user_id}>`
@@ -19,11 +19,15 @@ app.post('/unmerged', async (req, res) => {
   const branch = req.body.text
   if (!branch.match(/[0-9]+-[0-9]+-x/)) {
     console.log(`User initiated unmerged audit with invalid branch: ${branch}`)
-    return postInvalidBranch()
+    return postToSlack({
+      response_type: 'ephemeral',
+      text: 'Branch name not valid. Try again?'
+    }, req.body.response_url)
   }
 
   try {
     const prs = await fetchUnmergedPRs(branch)
+    console.log(`Found ${prs.length} unmerged PRs targeting ${branch}`)
 
     postToSlack({
       response_type: 'in_channel',
@@ -60,7 +64,7 @@ app.post('/audit', async (req, res) => {
           text: buildCommitsMessage(branch, commits, initiatedBy)
         }, req.body.response_url)
       } catch (err) {
-        console.log(`Error: ${err}`)
+        console.log(err)
         return postToSlack({
           response_type: 'ephemeral',
           text: `Error: ${err}`
@@ -72,7 +76,10 @@ app.post('/audit', async (req, res) => {
   
   if (!auditTarget.match(/[0-9]+-[0-9]+-x/)) {
     console.log(`User initiated unreleased audit with invalid branch: ${auditTarget}`)
-    return postInvalidBranch()
+    return postToSlack({
+      response_type: 'ephemeral',
+      text: 'Branch name not valid. Try again?'
+    }, req.body.response_url)
   }
 
   console.log(`auditing branch ${branch}`)
@@ -88,7 +95,7 @@ app.post('/audit', async (req, res) => {
 
     return res.status(200).end()
   } catch (err) {
-    console.log(`Error: ${err}`)
+    console.log(err)
     return postToSlack({
       response_type: 'ephemeral',
       text: `Error: ${err}`

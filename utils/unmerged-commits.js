@@ -1,5 +1,4 @@
 const { getAllGenerator } = require('./commits-helpers')
-const { linkifyPRs } = require('./helpers')
 
 const {
   ORGANIZATION_NAME,
@@ -23,9 +22,7 @@ function buildUnmergedPRsMessage(branch, prs, initiatedBy) {
   if (!prs || prs.length === 0) return `*No unmerged PRs for ${branch}*`
 
   const formattedPRs = prs.map(c => {
-    const prLink = linkifyPRs(c.title.split(/[\r\n]/, 1)[0])
-    // TODO
-    // return `- \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${prLink}`
+    return `- ${c.title.split(/[\r\n]/, 1)[0]} (<${c.url}|#${c.number}>)`
   }).join('\n')
 
   let response = `Unreleased pull requests targeting *${branch}* (from ${initiatedBy}):\n${formattedPRs}`

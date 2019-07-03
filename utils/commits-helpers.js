@@ -18,6 +18,8 @@ async function* getAllGenerator(urlEndpoint) {
       headers: { Authorization: `token ${GITHUB_TOKEN}` }
     })
 
+    console.log(resp)
+
     if (!resp.ok) {
       if (resp.headers.get('x-ratelimit-remaining') === '0') {
         const resetTime = Math.round(resp.headers.get('x-ratelimit-reset') - Date.now() / 1000)
