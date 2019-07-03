@@ -1,0 +1,15 @@
+{
+  "name": "unreleased",
+  "description": "",
+  "scripts": {},
+  "env": {},
+  "formation": {},
+  "addons": [
+    "papertrail"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
