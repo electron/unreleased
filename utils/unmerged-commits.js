@@ -24,7 +24,7 @@ function buildUnmergedPRsMessage(branch, prs, initiatedBy) {
     return `- ${c.title.split(/[\r\n]/, 1)[0]} (<${c.url}|#${c.number}>)`
   }).join('\n')
 
-  let response = `Unreleased pull requests targeting *${branch}* (from ${initiatedBy}):\n${formattedPRs}`
+  let response = `Unmerged pull requests targeting *${branch}* (from ${initiatedBy}):\n${formattedPRs}`
   if (prs.length !== 0) {
     response += `\n *There are unmerged PRs targeting \`${branch}\`! Are you sure you want to release?*`
   }

@@ -82,15 +82,15 @@ app.post('/audit', async (req, res) => {
     }, req.body.response_url)
   }
 
-  console.log(`auditing branch ${branch}`)
+  console.log(`auditing branch ${auditTarget}`)
 
   try {
     const commits = await fetchUnreleasedCommits(auditTarget)
-    console.log(`Found ${commits.length} commits on ${branch}`)
+    console.log(`Found ${commits.length} commits on ${auditTarget}`)
 
     postToSlack({
       response_type: 'in_channel',
-      text: buildUnreleasedCommitsMessage(branch, commits, initiatedBy)
+      text: buildUnreleasedCommitsMessage(auditTarget, commits, initiatedBy)
     }, req.body.response_url)
 
     return res.status(200).end()
