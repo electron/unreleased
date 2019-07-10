@@ -21,7 +21,7 @@ function buildUnmergedPRsMessage(branch, prs, initiatedBy) {
   if (!prs || prs.length === 0) return `*No unmerged PRs for ${branch}*`
 
   const formattedPRs = prs.map(c => {
-    return `- ${c.title.split(/[\r\n]/, 1)[0]} (<${c.url}|#${c.number}>)`
+    return `- ${c.title.split(/[\r\n]/, 1)[0]} (<${c.html_url}|#${c.number}>)`
   }).join('\n')
 
   let response = `Unmerged pull requests targeting *${branch}* (from ${initiatedBy}):\n${formattedPRs}`
