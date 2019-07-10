@@ -1,7 +1,7 @@
 const { Toolkit } = require('actions-toolkit')
 const { WebClient } = require('@slack/web-api')
 
-const { buildCommitsMessage, fetchUnreleasedCommits } = require('./utils/commits')
+const { buildUnreleasedCommitsMessage, fetchUnreleasedCommits } = require('./utils/unreleased-commits')
 const { getSupportedBranches } = require('./utils/helpers')
 const { SLACK_BOT_TOKEN } = require('./constants')
 
@@ -22,7 +22,7 @@ Toolkit.run(async tools => {
 
     const result = await slackWebClient.chat.postMessage({
       channel: '#wg-releases',
-      text: buildCommitsMessage(branch, commits, initiatedBy)
+      text: buildUnreleasedCommitsMessage(branch, commits, initiatedBy)
     })
 
     if (result.ok) {
