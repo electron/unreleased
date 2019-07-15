@@ -13,16 +13,14 @@ async function getAll(urlEndpoint) {
 // Generate and iterate through the JSON blob representing commits
 async function* getAllGenerator(urlEndpoint) {
   let next = urlEndpoint
-  while (true) {
+  while (next) {
     const resp = await fetch(next, {
       headers: { Authorization: `token ${GITHUB_TOKEN}` }
     })
 
-    console.log(resp)
-
     if (!resp.ok) {
       if (resp.headers.get('x-ratelimit-remaining') === '0') {
-        const resetTime = Math.round(resp.headers.get('x-ratelimit-reset') - Date.now() / 1000)
+        const resetTime = Math.ceil(resp.headers.get('x-ratelimit-reset') - Date.now() / 1000)
         throw new Error(`Ratelimited. Resets in ${resetTime} seconds.`)
       }
       throw new Error(`${resp.status} ${resp.statusText}`)
@@ -32,6 +30,15 @@ async function* getAllGenerator(urlEndpoint) {
     yield* json
 
     if (!resp.headers.get('link')) break
+
+    // try to get the next link from the `link` header
+    // ex. this link: 
+    // <https://api.github.com/repositories/9384267/tags?page=15>; rel="prev",
+    // <https://api.github.com/repositories/9384267/tags?page=17>; rel="next",
+    // <https://api.github.com/repositories/9384267/tags?page=18>; rel="last",
+    // <https://api.github.com/repositories/9384267/tags?page=1>; rel="first"
+    // would extract this next_link:
+    // [ ' <https://api.github.com/repositories/9384267/tags?page=17>', ' rel="next"' ]
     const next_link = resp.headers.get('link')
       .split(/,/)
       .map(x => x.split(/;/))
