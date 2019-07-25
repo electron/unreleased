@@ -41,8 +41,6 @@ function buildUnreleasedCommitsMessage(branch, commits, initiatedBy) {
   return response
 }
 
-fetchUnreleasedCommits('5-0-x').then(res => console.log('done'))
-
 module.exports = {
   buildUnreleasedCommitsMessage,
   fetchUnreleasedCommits
