@@ -2,7 +2,8 @@ const express = require('express')
 const bodyParser = require('body-parser')
 
 const { buildUnreleasedCommitsMessage, fetchUnreleasedCommits } = require ('./utils/unreleased-commits')
-const { buildUnmergedPRsMessage, fetchUnmergedPRs } = require('./utils/unmerged-commits')
+const { buildUnmergedPRsMessage, fetchUnmergedPRs } = require('./utils/unmerged-prs')
+const { buildNeedsManualPRsMessage, fetchNeedsManualPRs } = require('./utils/needs-manual-prs')
 const { postToSlack, getSupportedBranches } = require('./utils/helpers')
 
 const app = express()
@@ -18,12 +19,14 @@ app.post('/unmerged', async (req, res) => {
 
   const branch = req.body.text
   if (!branch.match(/[0-9]+-[0-9]+-x/)) {
-    console.log(`User initiated unmerged audit with invalid branch: ${branch}`)
+    console.log(`User initiated unmerged audit for invalid branch: ${branch}`)
     return postToSlack({
       response_type: 'ephemeral',
       text: 'Branch name not valid. Try again?'
     }, req.body.response_url)
   }
+
+  console.log(`Auditing unmerged PRs on branch: ${branch}`)
 
   try {
     const prs = await fetchUnmergedPRs(branch)
@@ -36,6 +39,41 @@ app.post('/unmerged', async (req, res) => {
 
     return res.status(200).end()
   } catch (err) {
+    return postToSlack({
+      response_type: 'ephemeral',
+      text: `Error: ${err}`
+    }, req.body.response_url)
+  }
+})
+
+// Check for pull requests which have been merged to master and labeled 
+// with target/BRANCH_NAME that trop failed for and which still need manual backports
+app.post('/needs-manual', async (req, res) => {
+  const initiatedBy = `<@${req.body.user_id}>`
+  const branch = req.body.text
+
+  if (!auditTarget.match(/[0-9]+-[0-9]+-x/)) {
+    console.log(`User initiated needs-manual audit for invalid branch: ${branch}`)
+    return postToSlack({
+      response_type: 'ephemeral',
+      text: 'Branch name not valid. Try again?'
+    }, req.body.response_url)
+  }
+
+  console.log(`Auditing PRs needing manual backport to branch: ${branch}`)
+
+  try {
+    const prs = await fetchNeedsManualPRs(branch)
+    console.log(`Found ${prs.length} prs on ${branch}`)
+
+    postToSlack({
+      response_type: 'in_channel',
+      text: buildNeedsManualPRsMessage(branch, prs, initiatedBy)
+    }, req.body.response_url)
+
+    return res.status(200).end()
+  } catch (err) {
+    console.error(err)
     return postToSlack({
       response_type: 'ephemeral',
       text: `Error: ${err}`
@@ -64,7 +102,7 @@ app.post('/audit', async (req, res) => {
           text: buildCommitsMessage(branch, commits, initiatedBy)
         }, req.body.response_url)
       } catch (err) {
-        console.log(err)
+        console.error(err)
         return postToSlack({
           response_type: 'ephemeral',
           text: `Error: ${err}`
@@ -75,14 +113,14 @@ app.post('/audit', async (req, res) => {
   }
   
   if (!auditTarget.match(/[0-9]+-[0-9]+-x/)) {
-    console.log(`User initiated unreleased audit with invalid branch: ${auditTarget}`)
+    console.log(`User initiated unreleased commit audit for invalid branch: ${auditTarget}`)
     return postToSlack({
       response_type: 'ephemeral',
       text: 'Branch name not valid. Try again?'
     }, req.body.response_url)
   }
 
-  console.log(`auditing branch ${auditTarget}`)
+  console.log(`Auditing unreleased commits on branch: ${auditTarget}`)
 
   try {
     const commits = await fetchUnreleasedCommits(auditTarget)
@@ -95,7 +133,7 @@ app.post('/audit', async (req, res) => {
 
     return res.status(200).end()
   } catch (err) {
-    console.log(err)
+    console.error(err)
     return postToSlack({
       response_type: 'ephemeral',
       text: `Error: ${err}`

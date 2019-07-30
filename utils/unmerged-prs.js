@@ -10,8 +10,8 @@ const {
 async function fetchUnmergedPRs(branch) {
   const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/pulls?base=${branch}`
   const unmerged = []
-  for await (const commit of getAllGenerator(url)) {
-    unmerged.push(commit)
+  for await (const pr of getAllGenerator(url)) {
+    unmerged.push(pr)
   }
   return unmerged
 }
