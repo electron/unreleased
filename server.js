@@ -52,7 +52,7 @@ app.post('/needs-manual', async (req, res) => {
   const initiatedBy = `<@${req.body.user_id}>`
   const branch = req.body.text
 
-  if (!auditTarget.match(/[0-9]+-[0-9]+-x/)) {
+  if (!branch.match(/[0-9]+-[0-9]+-x/)) {
     console.log(`User initiated needs-manual audit for invalid branch: ${branch}`)
     return postToSlack({
       response_type: 'ephemeral',
