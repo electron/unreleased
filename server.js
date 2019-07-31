@@ -50,7 +50,7 @@ app.post('/unmerged', async (req, res) => {
 // with target/BRANCH_NAME that trop failed for and which still need manual backports
 app.post('/needs-manual', async (req, res) => {
   const initiatedBy = `<@${req.body.user_id}>`
-  const branch = req.body.text
+  const [branch, author] = req.body.text.split(' ')
 
   if (!branch.match(/[0-9]+-[0-9]+-x/)) {
     console.log(`User initiated needs-manual audit for invalid branch: ${branch}`)
@@ -63,7 +63,7 @@ app.post('/needs-manual', async (req, res) => {
   console.log(`Auditing PRs needing manual backport to branch: ${branch}`)
 
   try {
-    const prs = await fetchNeedsManualPRs(branch)
+    const prs = await fetchNeedsManualPRs(branch, author)
     console.log(`Found ${prs.length} prs on ${branch}`)
 
     postToSlack({

@@ -2,7 +2,7 @@ const fetch = require('node-fetch')
 const { ORGANIZATION_NAME, REPO_NAME } = require('../constants')
 
 // Fetch all PRs targeting 'master' that have a 'needs-manual/<branch>' label on them
-async function fetchNeedsManualPRs(branch) {
+async function fetchNeedsManualPRs(branch, prAuthor) {
   const baseUrl = `https://api.github.com/search/issues?`
   
   // Construct queryString components
@@ -10,9 +10,10 @@ async function fetchNeedsManualPRs(branch) {
   const type = `type:pr`
   const state = `state:closed`
   const label = `label:"needs-manual-bp/${branch}"`
+  const author = prAuthor ? `` : `+author:${prAuthor}`
   
   // Assemble final endpoint
-  const url = baseUrl + `q=${type}+${repo}+${state}+${label}`
+  const url = baseUrl + `q=${type}+${repo}+${state}+${label}${author}` 
 
   const resp = await fetch(url)
   const prs = (await resp.json()).items
