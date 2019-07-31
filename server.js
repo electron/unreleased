@@ -61,6 +61,7 @@ app.post('/needs-manual', async (req, res) => {
   }
 
   console.log(`Auditing PRs needing manual backport to branch: ${branch}`)
+  if (author) console.log(`Scoping needs-manual PRs to those opened by ${author}`)
 
   try {
     const prs = await fetchNeedsManualPRs(branch, author)

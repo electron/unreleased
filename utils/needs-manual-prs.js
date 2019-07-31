@@ -10,7 +10,7 @@ async function fetchNeedsManualPRs(branch, prAuthor) {
   const type = `type:pr`
   const state = `state:closed`
   const label = `label:"needs-manual-bp/${branch}"`
-  const author = prAuthor ? `` : `+author:${prAuthor}`
+  const author = prAuthor ? `+author:${prAuthor}` : ``
   
   // Assemble final endpoint
   const url = baseUrl + `q=${type}+${repo}+${state}+${label}${author}` 
