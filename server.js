@@ -188,11 +188,15 @@ app.post('/audit-pre-release', async (req, res) => {
     } else {
       message = `Pre-release audit for *${branch}* (from ${initiatedBy})\n`
       
-      message += `PRs needing manual backport to *${branch}*:\n`
-      message += `${buildNeedsManualPRsMessage(branch, needsManualPRs)}\n`
-      
-      message += `Unmerged pull requests targeting *${branch}*:\n`
-      message += `${buildUnmergedPRsMessage(branch, unmergedPRs, initiatedBy)}\n`
+      if (needsManualPRs.length !== 0) {
+        message += `PRs needing manual backport to *${branch}*:\n`
+        message += `${buildNeedsManualPRsMessage(branch, needsManualPRs)}\n`
+      }
+
+      if (unmergedPRs.length !== 0) {
+        message += `Unmerged pull requests targeting *${branch}*:\n`
+        message += `${buildUnmergedPRsMessage(branch, unmergedPRs)}\n`
+      }
     }
 
     postToSlack({
