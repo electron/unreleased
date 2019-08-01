@@ -84,7 +84,7 @@ app.post('/needs-manual', async (req, res) => {
 
 // Check for commits which have been merged to a release branch but
 // not been released in a beta or stable.
-app.post('/audit', async (req, res) => {
+app.post('/unreleased', async (req, res) => {
   const initiatedBy = `<@${req.body.user_id}>`
   const auditTarget = req.body.text
 
@@ -130,6 +130,49 @@ app.post('/audit', async (req, res) => {
     postToSlack({
       response_type: 'in_channel',
       text: buildUnreleasedCommitsMessage(auditTarget, commits, initiatedBy)
+    }, req.body.response_url)
+
+    return res.status(200).end()
+  } catch (err) {
+    console.error(err)
+    return postToSlack({
+      response_type: 'ephemeral',
+      text: `Error: ${err}`
+    }, req.body.response_url)
+  }
+})
+
+// Combines checks for all PRs that either need manual backport to a given
+// release line or which are targeting said line and haven't been merged.
+app.post('/audit-pre-release', async (req, res) => {
+  const initiatedBy = `<@${req.body.user_id}>`
+  const branch = req.body.text
+
+  if (!branch.match(/[0-9]+-[0-9]+-x/)) {
+    console.log(`User initiated pre-release audit for invalid branch: ${branch}`)
+    return postToSlack({
+      response_type: 'ephemeral',
+      text: 'Branch name not valid. Try again?'
+    }, req.body.response_url)
+  }
+
+  console.log(`Performing pre-release audit for branch: ${branch}`)
+
+  try {
+    // In a prerelease audit, we don't want to scope by author so we pass null intentionally
+    const needsManualPRs = await fetchNeedsManualPRs(branch, null)
+    console.log(`Found ${needsManualPRs.length} prs needing manual backport on ${branch}`)
+
+    const unmergedPRs = await fetchUnmergedPRs(branch)
+    console.log(`Found ${unmergedPRs.length} unmerged PRs targeting ${branch}`)
+
+    const unmergedMessage = buildUnmergedPRsMessage(branch, unmergedPRs, initiatedBy)
+    const needsManualMessage = buildNeedsManualPRsMessage(branch, needsManualPRs, initiatedBy)
+    const fullMessage = `${unmergedMessage}\n${needsManualMessage}`
+
+    postToSlack({
+      response_type: 'in_channel',
+      text: fullMessage
     }, req.body.response_url)
 
     return res.status(200).end()
