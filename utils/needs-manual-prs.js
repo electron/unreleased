@@ -22,18 +22,16 @@ async function fetchNeedsManualPRs(branch, prAuthor) {
 }
 
 // Build the text blob that will be posted to Slack
-function buildNeedsManualPRsMessage(branch, prs, initiatedBy) {
-  if (!prs || prs.length === 0) return `*No PRs needing manual backport to ${branch}*`
-
+function buildNeedsManualPRsMessage(branch, prs) {
   const formattedPRs = prs.map(c => {
     return `- ${c.title.split(/[\r\n]/, 1)[0]} (<${c.html_url}|#${c.number}>)`
   }).join('\n')
 
-  let response = `PRs needing manual backport to *${branch}* (from ${initiatedBy}):\n${formattedPRs}`
   if (prs.length !== 0) {
-    response += `\n *There are PRs needing manual backport to \`${branch}\`! Are you sure you want to release?*`
+    formattedPRs += `\n *There are ${prs.length} PRs needing manual backport to \`${branch}\`!*`
   }
-  return response
+
+  return formattedPRs
 }
 
 module.exports = {
