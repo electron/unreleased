@@ -24,8 +24,7 @@ async function fetchUnreleasedCommits(branch) {
   return unreleased
 }
 
-// Build the text blob that will be posted to Slack &
-// conditionally notify the release team if it's time to release
+// Build the text blob that will be posted to Slack
 function buildUnreleasedCommitsMessage(branch, commits, initiatedBy) {
   if (!commits || commits.length === 0) return `*No unreleased commits on ${branch}*`
 

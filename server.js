@@ -32,9 +32,17 @@ app.post('/unmerged', async (req, res) => {
     const prs = await fetchUnmergedPRs(branch)
     console.log(`Found ${prs.length} unmerged PRs targeting ${branch}`)
 
+    let message
+    if (!prs || prs.length === 0) {
+      message = `*No PRs needing manual backport to ${branch}*`
+    } else {
+      message = `Unmerged pull requests targeting *${branch}* (from ${initiatedBy}):\n`
+      message += buildUnmergedPRsMessage(branch, prs)
+    }
+  
     postToSlack({
       response_type: 'in_channel',
-      text: buildUnmergedPRsMessage(branch, prs, initiatedBy)
+      text: message
     }, req.body.response_url)
 
     return res.status(200).end()
@@ -67,9 +75,17 @@ app.post('/needs-manual', async (req, res) => {
     const prs = await fetchNeedsManualPRs(branch, author)
     console.log(`Found ${prs.length} prs on ${branch}`)
 
+    let message
+    if (!prs || prs.length === 0) {
+      message = `*No PRs needing manual backport to ${branch}*`
+    } else {
+      message = `PRs needing manual backport to *${branch}* (from ${initiatedBy}):\n`
+      message += buildNeedsManualPRsMessage(branch, prs)
+    }
+
     postToSlack({
       response_type: 'in_channel',
-      text: buildNeedsManualPRsMessage(branch, prs, initiatedBy)
+      text: message
     }, req.body.response_url)
 
     return res.status(200).end()
@@ -166,13 +182,26 @@ app.post('/audit-pre-release', async (req, res) => {
     const unmergedPRs = await fetchUnmergedPRs(branch)
     console.log(`Found ${unmergedPRs.length} unmerged PRs targeting ${branch}`)
 
-    const unmergedMessage = buildUnmergedPRsMessage(branch, unmergedPRs, initiatedBy)
-    const needsManualMessage = buildNeedsManualPRsMessage(branch, needsManualPRs, initiatedBy)
-    const fullMessage = `${unmergedMessage}\n${needsManualMessage}`
+    let message
+    if ((needsManualPRs.length + unmergedPRs.length) === 0) {
+      message = `No PRs unmerged or needing manual backport for ${branch}`
+    } else {
+      message = `Pre-release audit for *${branch}* (from ${initiatedBy})\n`
+      
+      if (needsManualPRs.length !== 0) {
+        message += `PRs needing manual backport to *${branch}*:\n`
+        message += `${buildNeedsManualPRsMessage(branch, needsManualPRs)}\n`
+      }
+
+      if (unmergedPRs.length !== 0) {
+        message += `Unmerged pull requests targeting *${branch}*:\n`
+        message += `${buildUnmergedPRsMessage(branch, unmergedPRs)}\n`
+      }
+    }
 
     postToSlack({
       response_type: 'in_channel',
-      text: fullMessage
+      text: message
     }, req.body.response_url)
 
     return res.status(200).end()

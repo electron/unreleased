@@ -17,18 +17,16 @@ async function fetchUnmergedPRs(branch) {
 }
 
 // Build the text blob that will be posted to Slack
-function buildUnmergedPRsMessage(branch, prs, initiatedBy) {
-  if (!prs || prs.length === 0) return `*No unmerged PRs for ${branch}*`
-
-  const formattedPRs = prs.map(c => {
+function buildUnmergedPRsMessage(branch, prs) {
+  let formattedPRs = prs.map(c => {
     return `- ${c.title.split(/[\r\n]/, 1)[0]} (<${c.html_url}|#${c.number}>)`
   }).join('\n')
 
-  let response = `Unmerged pull requests targeting *${branch}* (from ${initiatedBy}):\n${formattedPRs}`
   if (prs.length !== 0) {
-    response += `\n *There are unmerged PRs targeting \`${branch}\`! Are you sure you want to release?*`
+    formattedPRs += `\n *There are ${prs.length} unmerged PRs targeting \`${branch}\`!*`
   }
-  return response
+
+  return formattedPRs
 }
 
 module.exports = {
