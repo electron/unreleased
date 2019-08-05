@@ -184,7 +184,7 @@ app.post('/audit-pre-release', async (req, res) => {
 
     let message
     if ((needsManualPRs.length + unmergedPRs.length) === 0) {
-      message = `No PRs unmerged or needing manual backport for ${branch}`
+      message = `*No PRs unmerged or needing manual backport for ${branch}*`
     } else {
       message = `Pre-release audit for *${branch}* (from ${initiatedBy})\n`
       
