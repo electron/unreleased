@@ -3,7 +3,7 @@ const fetch = require('node-fetch')
 const { GITHUB_TOKEN } = require('../constants')
 
 // Formulate a list of all commits based on a certain url endpoint
-// for a release tag on Electron
+// for a release tag
 async function getAll(urlEndpoint) {
   const objects = []
   for await (const obj of getAllGenerator(urlEndpoint)) objects.push(obj)

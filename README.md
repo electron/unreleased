@@ -1,6 +1,6 @@
 ## Electron Unreleased Commit Audit
 
-This repository allows users to query information relating to release branches on [`electron/electron`](https://github.com/electron/electron).
+This repository allows users to query information relating to release branches on a desired repository.
 
 There are four potential actions possible:
 1. Reporting commits unreleased for a specific release branch.
@@ -8,7 +8,13 @@ There are four potential actions possible:
 3. Reporting pull requests which need to be manually backported to a particular release line.
 4. Perform a pre-release audit combining actions 2 and 3.
 
-An unreleased commit audit is triggered automatically via cron job on Monday mornings at 9AM PST for all supported release branches of Electron.
+An unreleased commit audit is triggered automatically via cron job on Monday mornings at 9AM PST for all supported release branches of your repository.
+
+### Setup
+
+This tool will default to setting the organization and repository name to [`electron/electron`](https://github.com/electron/electron), but you can set your own by setting `ORGANIZATION_NAME` and `REPO_NAME` as environment variables.
+
+You can also set the number of currently supported release lines with the `NUM_SUPPORTED_VERSIONS` env var.
 
 ### Check Unreleased
 
@@ -18,7 +24,7 @@ An unreleased commit audit can be triggered via Slack using the following:
 /check-unreleased <branch-name>
 ```
 
-where `branch-name` matches the name of a release line branch of the Electron repository.
+where `branch-name` matches the name of a release line branch of the desired repository.
 
 Example:
 
@@ -26,10 +32,10 @@ Example:
 /check-unreleased 5-0-x
 ```
 
-To manually query the status of all [currently supported](https://electronjs.org/docs/tutorial/support) Electron release branches:
+To manually query the status of all currently supported release branches:
 
 ```sh
-/check-unreleases all
+/check-unreleased all
 ```
 
 ### Check Unmerged
@@ -40,7 +46,7 @@ An unmerged pull request audit can be triggered via Slack using the following:
 /check-unmerged <branch-name>
 ```
 
-where `branch-name` matches the name of a release line branch of the Electron repository.
+where `branch-name` matches the name of a release line branch of the repository.
 
 Example:
 
@@ -56,7 +62,7 @@ An audit of pull requests needing manual backport to a particular release line c
 /check-needs-manual <branch-name>
 ```
 
-where `branch-name` matches the name of a release line branch of the Electron repository.
+where `branch-name` matches the name of a release line branch of the repository.
 
 Example:
 
@@ -80,7 +86,7 @@ This combines the needs-manual audit with the unmerged audit to return a full li
 /audit-pre-release <branch-name>
 ```
 
-where `branch-name` matches the name of a release line branch of the Electron repository.
+where `branch-name` matches the name of a release line branch of the repository.
 
 Example:
 
