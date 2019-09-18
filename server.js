@@ -215,5 +215,5 @@ app.post('/audit-pre-release', async (req, res) => {
 })
 
 const listener = app.listen(process.env.PORT, () => {
-  console.log(`electron-unreleased-commits listening on ${listener.address().port}`)
+  console.log(`release-branch-auditor listening on ${listener.address().port}`)
 })
