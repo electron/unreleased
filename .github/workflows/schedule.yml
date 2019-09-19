@@ -1,0 +1,17 @@
+name: Perform Unreleased Audit
+
+on:
+  schedule:
+  - cron: '0 09 * * 1'
+
+jobs:
+  performUnreleasedAudit:
+    name: Perform Unreleased Audit
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Check unreleased commits
+      uses: ./
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
