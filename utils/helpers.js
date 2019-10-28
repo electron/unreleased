@@ -29,12 +29,12 @@ async function getSupportedBranches() {
 
   let branches = await resp.json()
   branches = branches.filter(branch => {
-    return branch.protected && branch.name.match(/[0-9]-[0-9]-x/)
+    return branch.protected && branch.name.match(/^[0-9]+-([0-9]+-x|x-y)$/)
   }).map(b => b.name)
 
   const filtered = {}
   branches.sort().forEach(branch => filtered[branch.charAt(0)] = branch)
-  return Object.values(filtered).slice(-NUM_SUPPORTED_VERSIONS)
+  return Object.values(filtered).sort().slice(-NUM_SUPPORTED_VERSIONS)
 }
 
 // Post a message to a Slack workspace
