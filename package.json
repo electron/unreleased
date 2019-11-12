@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Checks for and reports commits unreleased for all currently supported branches.",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "lint": "prettier --check '**/*.js'",
+    "prettier:write": "prettier --write '**/*.js'"
   },
   "repository": {
     "type": "git",
@@ -22,6 +24,7 @@
     "express": "^4.16.4",
     "https": "^1.0.0",
     "node-fetch": "^2.3.0",
+    "prettier": "^1.19.1",
     "url": "^0.11.0"
   }
 }
