@@ -8,6 +8,7 @@ const {
 const { buildUnmergedPRsMessage, fetchUnmergedPRs } = require('./utils/unmerged-prs');
 const { buildNeedsManualPRsMessage, fetchNeedsManualPRs } = require('./utils/needs-manual-prs');
 const { postToSlack, getSupportedBranches } = require('./utils/helpers');
+const { RELEASE_BRANCH_PATTERN } = require('./constants');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -15,15 +16,13 @@ app.use(bodyParser.json());
 
 app.use(express.static('public'));
 
-const releaseBranchPattern = /^[0-9]+-([0-9]+-x|x-y)$/;
-
 // Check for pull requests targeting a specified release branch
 // that have not yet been merged.
 app.post('/unmerged', async (req, res) => {
   const initiatedBy = `<@${req.body.user_id}>`;
 
   const branch = req.body.text;
-  if (!branch.match(releaseBranchPattern)) {
+  if (!RELEASE_BRANCH_PATTERN.test(branch)) {
     console.log(`User initiated unmerged audit for invalid branch: ${branch}`);
     return postToSlack(
       {
@@ -74,7 +73,7 @@ app.post('/needs-manual', async (req, res) => {
   const initiatedBy = `<@${req.body.user_id}>`;
   const [branch, author] = req.body.text.split(' ');
 
-  if (!branch.match(releaseBranchPattern)) {
+  if (!RELEASE_BRANCH_PATTERN.test(branch)) {
     console.log(`User initiated needs-manual audit for invalid branch: ${branch}`);
     return postToSlack(
       {
@@ -158,7 +157,7 @@ app.post('/unreleased', async (req, res) => {
     return res.status(200).end();
   }
 
-  if (!auditTarget.match(releaseBranchPattern)) {
+  if (!RELEASE_BRANCH_PATTERN.test(auditTarget)) {
     console.log(`User initiated unreleased commit audit for invalid branch: ${auditTarget}`);
     return postToSlack(
       {
@@ -202,7 +201,7 @@ app.post('/audit-pre-release', async (req, res) => {
   const initiatedBy = `<@${req.body.user_id}>`;
   const branch = req.body.text;
 
-  if (!branch.match(releaseBranchPattern)) {
+  if (!RELEASE_BRANCH_PATTERN.test(branch)) {
     console.log(`User initiated pre-release audit for invalid branch: ${branch}`);
     return postToSlack(
       {

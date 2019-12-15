@@ -7,6 +7,7 @@ const {
   REPO_NAME,
   GH_API_PREFIX,
   NUM_SUPPORTED_VERSIONS,
+  RELEASE_BRANCH_PATTERN,
 } = require('../constants');
 
 // Add a live PR link to a given commit
@@ -32,7 +33,7 @@ async function getSupportedBranches() {
   let branches = await resp.json();
   branches = branches
     .filter(branch => {
-      return branch.protected && branch.name.match(/^[0-9]+-([0-9]+-x|x-y)$/);
+      return branch.protected && RELEASE_BRANCH_PATTERN.test(branch.name);
     })
     .map(b => b.name);
 
