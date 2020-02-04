@@ -19,11 +19,13 @@ app.use(express.static('public'));
 // Check for pull requests targeting a specified release branch
 // that have not yet been merged.
 app.post('/unmerged', async (req, res) => {
-  const initiatedBy = `<@${req.body.user_id}>`;
-
+  const initiator = req.body.user_id;
   const branch = req.body.text;
+
+  console.log(`${initiator} initiated unmerged audit for branch: ${branch}`);
+
   if (!RELEASE_BRANCH_PATTERN.test(branch)) {
-    console.log(`User initiated unmerged audit for invalid branch: ${branch}`);
+    console.log(`${branch} is not a valid branch`);
     return postToSlack(
       {
         response_type: 'ephemeral',
@@ -43,7 +45,7 @@ app.post('/unmerged', async (req, res) => {
     if (!prs || prs.length === 0) {
       message = `*No PRs needing manual backport to ${branch}*`;
     } else {
-      message = `Unmerged pull requests targeting *${branch}* (from ${initiatedBy}):\n`;
+      message = `Unmerged pull requests targeting *${branch}* (from <@${initiator}>):\n`;
       message += buildUnmergedPRsMessage(branch, prs);
     }
 
@@ -70,11 +72,13 @@ app.post('/unmerged', async (req, res) => {
 // Check for pull requests which have been merged to master and labeled
 // with target/BRANCH_NAME that trop failed for and which still need manual backports
 app.post('/needs-manual', async (req, res) => {
-  const initiatedBy = `<@${req.body.user_id}>`;
+  const initiator = req.body.user_id;
   const [branch, author] = req.body.text.split(' ');
 
+  console.log(`${initiator} initiated needs-manual audit for branch: ${branch}`);
+
   if (!RELEASE_BRANCH_PATTERN.test(branch)) {
-    console.log(`User initiated needs-manual audit for invalid branch: ${branch}`);
+    console.log(`${branch} is not a valid branch`);
     return postToSlack(
       {
         response_type: 'ephemeral',
@@ -84,8 +88,9 @@ app.post('/needs-manual', async (req, res) => {
     );
   }
 
-  console.log(`Auditing PRs needing manual backport to branch: ${branch}`);
-  if (author) console.log(`Scoping needs-manual PRs to those opened by ${author}`);
+  if (author) {
+    console.log(`Scoping needs-manual PRs to those opened by ${author}`);
+  }
 
   try {
     const prs = await fetchNeedsManualPRs(branch, author);
@@ -95,13 +100,17 @@ app.post('/needs-manual', async (req, res) => {
     if (!prs || prs.length === 0) {
       message = `*No PRs needing manual backport to ${branch}*`;
     } else {
-      message = `PRs needing manual backport to *${branch}* (from ${initiatedBy}):\n`;
+      message = `PRs needing manual backport to *${branch}* (from <@${initiator}>):\n`;
       message += buildNeedsManualPRsMessage(branch, prs);
     }
 
+    // If someone is running an audit on the needs-manual PRs that only
+    // they are responsible for, make the response ephemeral.
+    const responseType = initiator === author ? 'ephemeral' : 'in_channel';
+
     postToSlack(
       {
-        response_type: 'in_channel',
+        response_type: responseType,
         text: message,
       },
       req.body.response_url,
@@ -123,23 +132,23 @@ app.post('/needs-manual', async (req, res) => {
 // Check for commits which have been merged to a release branch but
 // not been released in a beta or stable.
 app.post('/unreleased', async (req, res) => {
-  const initiatedBy = `<@${req.body.user_id}>`;
+  const initiator = req.body.user_id;
   const auditTarget = req.body.text;
 
   // Allow for manual batch audit of all supported release branches
   if (auditTarget === 'all') {
-    console.log(`Auditing all supported release branches`);
+    console.log(`${initiator} triggered audit for all supported release branches`);
 
     const branches = await getSupportedBranches();
     for (const branch of branches) {
-      console.log(`auditing branch ${branch}`);
+      console.log(`Auditing branch ${branch}`);
       try {
         const commits = await fetchUnreleasedCommits(branch);
         console.log(`Found ${commits.length} commits on ${branch}`);
         postToSlack(
           {
             response_type: 'in_channel',
-            text: buildCommitsMessage(branch, commits, initiatedBy),
+            text: buildCommitsMessage(branch, commits, initiator),
           },
           req.body.response_url,
         );
@@ -157,8 +166,10 @@ app.post('/unreleased', async (req, res) => {
     return res.status(200).end();
   }
 
+  console.log(`${initiator} initiated unreleased commit audit for branch: ${auditTarget}`);
+
   if (!RELEASE_BRANCH_PATTERN.test(auditTarget)) {
-    console.log(`User initiated unreleased commit audit for invalid branch: ${auditTarget}`);
+    console.log(`${auditTarget} is not a valid branch`);
     return postToSlack(
       {
         response_type: 'ephemeral',
@@ -168,8 +179,6 @@ app.post('/unreleased', async (req, res) => {
     );
   }
 
-  console.log(`Auditing unreleased commits on branch: ${auditTarget}`);
-
   try {
     const commits = await fetchUnreleasedCommits(auditTarget);
     console.log(`Found ${commits.length} commits on ${auditTarget}`);
@@ -177,7 +186,7 @@ app.post('/unreleased', async (req, res) => {
     postToSlack(
       {
         response_type: 'in_channel',
-        text: buildUnreleasedCommitsMessage(auditTarget, commits, initiatedBy),
+        text: buildUnreleasedCommitsMessage(auditTarget, commits, initiator),
       },
       req.body.response_url,
     );
@@ -198,11 +207,13 @@ app.post('/unreleased', async (req, res) => {
 // Combines checks for all PRs that either need manual backport to a given
 // release line or which are targeting said line and haven't been merged.
 app.post('/audit-pre-release', async (req, res) => {
-  const initiatedBy = `<@${req.body.user_id}>`;
+  const initiator = req.body.user_id;
   const branch = req.body.text;
 
+  console.log(`${initiator} initiated pre-release audit for branch: ${branch}`);
+
   if (!RELEASE_BRANCH_PATTERN.test(branch)) {
-    console.log(`User initiated pre-release audit for invalid branch: ${branch}`);
+    console.log(`${auditTarget} is not a valid branch`);
     return postToSlack(
       {
         response_type: 'ephemeral',
@@ -212,12 +223,10 @@ app.post('/audit-pre-release', async (req, res) => {
     );
   }
 
-  console.log(`Performing pre-release audit for branch: ${branch}`);
-
   try {
     // In a prerelease audit, we don't want to scope by author so we pass null intentionally
     const needsManualPRs = await fetchNeedsManualPRs(branch, null);
-    console.log(`Found ${needsManualPRs.length} prs needing manual backport on ${branch}`);
+    console.log(`Found ${needsManualPRs.length} PRs needing manual backport on ${branch}`);
 
     const unmergedPRs = await fetchUnmergedPRs(branch);
     console.log(`Found ${unmergedPRs.length} unmerged PRs targeting ${branch}`);
@@ -226,7 +235,7 @@ app.post('/audit-pre-release', async (req, res) => {
     if (needsManualPRs.length + unmergedPRs.length === 0) {
       message = `*No PRs unmerged or needing manual backport for ${branch}*`;
     } else {
-      message = `Pre-release audit for *${branch}* (from ${initiatedBy})\n`;
+      message = `Pre-release audit for *${branch}* (from <@${initiator}>)\n`;
 
       if (needsManualPRs.length !== 0) {
         message += `PRs needing manual backport to *${branch}*:\n`;

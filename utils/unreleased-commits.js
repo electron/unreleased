@@ -21,7 +21,7 @@ async function fetchUnreleasedCommits(branch) {
 }
 
 // Build the text blob that will be posted to Slack
-function buildUnreleasedCommitsMessage(branch, commits, initiatedBy) {
+function buildUnreleasedCommitsMessage(branch, commits, initiator) {
   if (!commits || commits.length === 0) return `*No unreleased commits on ${branch}*`;
 
   const formattedCommits = commits
@@ -31,7 +31,7 @@ function buildUnreleasedCommitsMessage(branch, commits, initiatedBy) {
     })
     .join('\n');
 
-  let response = `Unreleased commits in *${branch}* (from ${initiatedBy}):\n${formattedCommits}`;
+  let response = `Unreleased commits in *${branch}* (from <@${initiator}>):\n${formattedCommits}`;
   if (commits.length >= 10) {
     response += `\n *There are a lot of unreleased commits on \`${branch}\`! Time for a release?*`;
   }
