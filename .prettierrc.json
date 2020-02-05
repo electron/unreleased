@@ -4,5 +4,6 @@
   "singleQuote": true,
   "printWidth": 100,
   "parser": "typescript",
-  "endOfLine": "lf"
+  "endOfLine": "lf",
+  "semi": false
 }
