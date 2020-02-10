@@ -9,6 +9,7 @@ const { getSupportedBranches } = require('./utils/helpers')
 const { SLACK_BOT_TOKEN } = require('./constants')
 
 const slackWebClient = new WebClient(SLACK_BOT_TOKEN)
+const AUDIT_POST_CHANNEL = process.env.AUDIT_POST_CHANNEL || '#wg-releases'
 
 Toolkit.run(
   async tools => {
@@ -25,7 +26,7 @@ Toolkit.run(
       }
 
       const result = await slackWebClient.chat.postMessage({
-        channel: '#wg-releases',
+        channel: AUDIT_POST_CHANNEL,
         text: buildUnreleasedCommitsMessage(branch, commits, initiatedBy),
       })
 
