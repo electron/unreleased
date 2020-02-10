@@ -31,7 +31,9 @@ function buildUnreleasedCommitsMessage(branch, commits, initiator) {
     })
     .join('\n')
 
-  let response = `Unreleased commits in *${branch}* (from <@${initiator}>):\n${formattedCommits}`
+  // For unreleased commits only, we don't want to deduce slack user for auto-audit.
+  const from = initiator === 'automatic audit' ? initiator : `<@${initiator}>`
+  let response = `Unreleased commits in *${branch}* (from ${from}):\n${formattedCommits}`
   if (commits.length >= 10) {
     response += `\n *There are a lot of unreleased commits on \`${branch}\`! Time for a release?*`
   }
