@@ -5,7 +5,9 @@ const { ORGANIZATION_NAME, REPO_NAME, GH_API_PREFIX } = require('../constants')
 
 // Fetch all unreleased commits for a specified release line branch
 async function fetchUnreleasedCommits(branch) {
-  const tags = await getAll(`${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/tags`)
+  const tags = await getAll(
+    `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/tags`,
+  )
   const unreleased = []
   const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/commits?sha=${branch}`
 
@@ -22,7 +24,8 @@ async function fetchUnreleasedCommits(branch) {
 
 // Build the text blob that will be posted to Slack
 function buildUnreleasedCommitsMessage(branch, commits, initiator) {
-  if (!commits || commits.length === 0) return `*No unreleased commits on ${branch}*`
+  if (!commits || commits.length === 0)
+    return `*No unreleased commits on ${branch}*`
 
   const formattedCommits = commits
     .map(c => {

@@ -20,7 +20,9 @@ async function* getAllGenerator(urlEndpoint) {
 
     if (!resp.ok) {
       if (resp.headers.get('x-ratelimit-remaining') === '0') {
-        const resetTime = Math.ceil(resp.headers.get('x-ratelimit-reset') - Date.now() / 1000)
+        const resetTime = Math.ceil(
+          resp.headers.get('x-ratelimit-reset') - Date.now() / 1000,
+        )
         throw new Error(`Ratelimited. Resets in ${resetTime} seconds.`)
       }
       throw new Error(`${resp.status} ${resp.statusText}`)

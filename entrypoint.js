@@ -22,7 +22,9 @@ Toolkit.run(
 
       tools.log.info(`Found ${commits.length} commits on ${branch}`)
       if (commits.length >= 10) {
-        tools.log.info(`Reached ${commits.length} commits on ${branch}, time to release.`)
+        tools.log.info(
+          `Reached ${commits.length} commits on ${branch}, time to release.`,
+        )
       }
 
       const result = await slackWebClient.chat.postMessage({
@@ -33,7 +35,9 @@ Toolkit.run(
       if (result.ok) {
         tools.log.info(`Audit message sent for ${branch} 🚀`)
       } else {
-        tools.exit.failure(`Unable to send audit info for ${branch}: ` + result.error)
+        tools.exit.failure(
+          `Unable to send audit info for ${branch}: ` + result.error,
+        )
       }
     }
     tools.exit.success(`All release branches audited`)

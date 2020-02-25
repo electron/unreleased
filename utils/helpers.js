@@ -14,7 +14,8 @@ const {
 function linkifyPRs(msg) {
   return msg.replace(
     /#(\d+)/g,
-    (_, pr_id) => `<https://github.com/${ORGANIZATION_NAME}/${REPO_NAME}/pull/${pr_id}|#${pr_id}>`,
+    (_, pr_id) =>
+      `<https://github.com/${ORGANIZATION_NAME}/${REPO_NAME}/pull/${pr_id}|#${pr_id}>`,
   )
 }
 

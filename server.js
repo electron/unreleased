@@ -6,8 +6,14 @@ const {
   buildUnreleasedCommitsMessage,
   fetchUnreleasedCommits,
 } = require('./utils/unreleased-commits')
-const { buildUnmergedPRsMessage, fetchUnmergedPRs } = require('./utils/unmerged-prs')
-const { buildNeedsManualPRsMessage, fetchNeedsManualPRs } = require('./utils/needs-manual-prs')
+const {
+  buildUnmergedPRsMessage,
+  fetchUnmergedPRs,
+} = require('./utils/unmerged-prs')
+const {
+  buildNeedsManualPRsMessage,
+  fetchNeedsManualPRs,
+} = require('./utils/needs-manual-prs')
 const { postToSlack, getSupportedBranches } = require('./utils/helpers')
 const { RELEASE_BRANCH_PATTERN, SLACK_BOT_TOKEN } = require('./constants')
 
@@ -23,13 +29,17 @@ app.use(express.static('public'))
 // that have not yet been merged.
 app.post('/unmerged', async (req, res) => {
   const branch = req.body.text
-  const { profile } = await slackWebClient.users.profile.get({ user: req.body.user_id })
+  const { profile } = await slackWebClient.users.profile.get({
+    user: req.body.user_id,
+  })
   const initiator = {
     id: req.body.user_id,
     name: profile.display_name_normalized,
   }
 
-  console.log(`${initiator.name} initiated unmerged audit for branch: ${branch}`)
+  console.log(
+    `${initiator.name} initiated unmerged audit for branch: ${branch}`,
+  )
 
   if (!RELEASE_BRANCH_PATTERN.test(branch)) {
     console.log(`${branch} is not a valid branch`)
@@ -82,13 +92,17 @@ app.post('/needs-manual', async (req, res) => {
   const branches = await getSupportedBranches()
 
   const [branch, author] = req.body.text.split(' ')
-  const { profile } = await slackWebClient.users.profile.get({ user: req.body.user_id })
+  const { profile } = await slackWebClient.users.profile.get({
+    user: req.body.user_id,
+  })
   const initiator = {
     id: req.body.user_id,
     name: profile.display_name_normalized,
   }
 
-  console.log(`${initiator.name} initiated needs-manual audit for branch: ${branch}`)
+  console.log(
+    `${initiator.name} initiated needs-manual audit for branch: ${branch}`,
+  )
 
   if (!RELEASE_BRANCH_PATTERN.test(branch) || !branches.includes(branch)) {
     console.log(`${branch} is not a valid branch`)
@@ -148,7 +162,9 @@ app.post('/unreleased', async (req, res) => {
   const branches = await getSupportedBranches()
 
   const auditTarget = req.body.text
-  const { profile } = await slackWebClient.users.profile.get({ user: req.body.user_id })
+  const { profile } = await slackWebClient.users.profile.get({
+    user: req.body.user_id,
+  })
   const initiator = {
     id: req.body.user_id,
     name: profile.display_name_normalized,
@@ -156,7 +172,9 @@ app.post('/unreleased', async (req, res) => {
 
   // Allow for manual batch audit of all supported release branches
   if (auditTarget === 'all') {
-    console.log(`${initiator.name} triggered audit for all supported release branches`)
+    console.log(
+      `${initiator.name} triggered audit for all supported release branches`,
+    )
 
     for (const branch of branches) {
       console.log(`Auditing branch ${branch}`)
@@ -184,9 +202,14 @@ app.post('/unreleased', async (req, res) => {
     return res.status(200).end()
   }
 
-  console.log(`${initiator.name} initiated unreleased commit audit for branch: ${auditTarget}`)
+  console.log(
+    `${initiator.name} initiated unreleased commit audit for branch: ${auditTarget}`,
+  )
 
-  if (!RELEASE_BRANCH_PATTERN.test(auditTarget) || !branches.includes(auditTarget)) {
+  if (
+    !RELEASE_BRANCH_PATTERN.test(auditTarget) ||
+    !branches.includes(auditTarget)
+  ) {
     console.log(`${auditTarget} is not a valid branch`)
     return postToSlack(
       {
@@ -228,13 +251,17 @@ app.post('/audit-pre-release', async (req, res) => {
   const branches = await getSupportedBranches()
 
   const branch = req.body.text
-  const { profile } = await slackWebClient.users.profile.get({ user: req.body.user_id })
+  const { profile } = await slackWebClient.users.profile.get({
+    user: req.body.user_id,
+  })
   const initiator = {
     id: req.body.user_id,
     name: profile.display_name_normalized,
   }
 
-  console.log(`${initiator.name} initiated pre-release audit for branch: ${branch}`)
+  console.log(
+    `${initiator.name} initiated pre-release audit for branch: ${branch}`,
+  )
 
   if (!RELEASE_BRANCH_PATTERN.test(branch) || !branches.includes(branch)) {
     console.log(`${branch} is not a valid branch`)
@@ -250,7 +277,9 @@ app.post('/audit-pre-release', async (req, res) => {
   try {
     // In a prerelease audit, we don't want to scope by author so we pass null intentionally
     const needsManualPRs = await fetchNeedsManualPRs(branch, null)
-    console.log(`Found ${needsManualPRs.length} PRs needing manual backport on ${branch}`)
+    console.log(
+      `Found ${needsManualPRs.length} PRs needing manual backport on ${branch}`,
+    )
 
     const unmergedPRs = await fetchUnmergedPRs(branch)
     console.log(`Found ${unmergedPRs.length} unmerged PRs targeting ${branch}`)

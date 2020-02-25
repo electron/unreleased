@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node server.js",
     "lint": "prettier --check '**/*.js'",
-    "prettier:write": "prettier --write '**/*.js'"
+    "format": "prettier --write '**/*.js'"
   },
   "repository": {
     "type": "git",
