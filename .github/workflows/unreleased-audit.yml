@@ -15,3 +15,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        ACTION_TYPE: 'unreleased'

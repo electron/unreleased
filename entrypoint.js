@@ -5,8 +5,14 @@ const {
   buildUnreleasedCommitsMessage,
   fetchUnreleasedCommits,
 } = require('./utils/unreleased-commits')
+
+const {
+  buildNeedsManualPRsMessage,
+  fetchNeedsManualPRs,
+} = require('./utils/needs-manual-prs')
+
 const { getSupportedBranches } = require('./utils/helpers')
-const { SLACK_BOT_TOKEN } = require('./constants')
+const { SLACK_BOT_TOKEN, ACTION_TYPE } = require('./constants')
 
 const slackWebClient = new WebClient(SLACK_BOT_TOKEN)
 const AUDIT_POST_CHANNEL = process.env.AUDIT_POST_CHANNEL || '#wg-releases'
@@ -16,20 +22,36 @@ Toolkit.run(
     const initiatedBy = 'automatic audit'
     const branches = await getSupportedBranches()
     for (const branch of branches) {
-      tools.log.info(`Auditing branch ${branch}`)
+      tools.log.info(`Auditing ${ACTION_TYPE} on branch ${branch}`)
 
-      const commits = await fetchUnreleasedCommits(branch)
+      let commits
+      if (ACTION_TYPE === 'unreleased') {
+        commits = await fetchUnreleasedCommits(branch)
+      } else if (ACTION_TYPE === 'needs-manual') {
+        commits = await fetchNeedsManualPRs(branch, null /* author */)
+      }
 
       tools.log.info(`Found ${commits.length} commits on ${branch}`)
-      if (commits.length >= 10) {
+      if (ACTION_TYPE === 'unreleased' && commits.length >= 10) {
         tools.log.info(
           `Reached ${commits.length} commits on ${branch}, time to release.`,
         )
       }
 
+      let text = `${ACTION_TYPE} audit`
+      if (ACTION_TYPE === 'unreleased') {
+        text += buildUnreleasedCommitsMessage(branch, commits, initiatedBy)
+      } else if (ACTION_TYPE === 'needs-manual') {
+        text += buildNeedsManualPRsMessage(
+          branch,
+          commits,
+          true /* shouldRemind */,
+        )
+      }
+
       const result = await slackWebClient.chat.postMessage({
         channel: AUDIT_POST_CHANNEL,
-        text: buildUnreleasedCommitsMessage(branch, commits, initiatedBy),
+        text,
       })
 
       if (result.ok) {
