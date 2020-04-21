@@ -22,10 +22,14 @@ async function fetchNeedsManualPRs(branch, prAuthor) {
 }
 
 // Build the text blob that will be posted to Slack
-function buildNeedsManualPRsMessage(branch, prs) {
+function buildNeedsManualPRsMessage(branch, prs, shouldRemind) {
   let formattedPRs = prs
     .map(c => {
-      return `- ${c.title.split(/[\r\n]/, 1)[0]} (<${c.html_url}|#${c.number}>)`
+      let line = `* <${c.html_url}|#${c.number}> - ${
+        c.title.split(/[\r\n]/, 1)[0]
+      }`
+      if (shouldRemind) line += ` (<@${c.user.login}>)`
+      return line
     })
     .join('\n')
 

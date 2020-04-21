@@ -90,11 +90,22 @@ app.post('/unmerged', async (req, res) => {
 // with target/BRANCH_NAME that trop failed for and which still need manual backports
 app.post('/needs-manual', async (req, res) => {
   const branches = await getSupportedBranches()
+  const REMIND = 'remind'
 
-  const [branch, author] = req.body.text.split(' ')
+  let [branch, author, remind] = req.body.text.split(' ')
+
+  let shouldRemind = false
+  if (author === REMIND && remind === undefined) {
+    shouldRemind = true
+    author = null
+  } else if (remind === REMIND) {
+    shouldRemind = true
+  }
+
   const { profile } = await slackWebClient.users.profile.get({
     user: req.body.user_id,
   })
+
   const initiator = {
     id: req.body.user_id,
     name: profile.display_name_normalized,
@@ -128,7 +139,7 @@ app.post('/needs-manual', async (req, res) => {
       message = `*No PRs needing manual backport to ${branch}*`
     } else {
       message = `PRs needing manual backport to *${branch}* (from <@${initiator.id}>):\n`
-      message += buildNeedsManualPRsMessage(branch, prs)
+      message += buildNeedsManualPRsMessage(branch, prs, shouldRemind)
     }
 
     // If someone is running an audit on the needs-manual PRs that only
