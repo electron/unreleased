@@ -2,7 +2,7 @@ name: Perform Manual Backport Audit
 
 on:
   schedule:
-  - cron: '0 09 * * 3'
+  - cron: '10 16 * * 3'
 
 jobs:
   performUnreleasedAudit:

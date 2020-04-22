@@ -11,6 +11,11 @@ const {
   fetchNeedsManualPRs,
 } = require('./utils/needs-manual-prs')
 
+const Actions = {
+  UNRELEASED: 'unreleased',
+  NEEDS_MANUAL: 'needs-manual',
+}
+
 const { getSupportedBranches } = require('./utils/helpers')
 const { SLACK_BOT_TOKEN, ACTION_TYPE } = require('./constants')
 
@@ -25,9 +30,9 @@ Toolkit.run(
       tools.log.info(`Auditing ${ACTION_TYPE} on branch ${branch}`)
 
       let commits
-      if (ACTION_TYPE === 'unreleased') {
+      if (ACTION_TYPE === Actions.UNRELEASED) {
         commits = await fetchUnreleasedCommits(branch)
-      } else if (ACTION_TYPE === 'needs-manual') {
+      } else if (ACTION_TYPE === Actions.NEEDS_MANUAL) {
         commits = await fetchNeedsManualPRs(branch, null /* author */)
       }
 
@@ -39,9 +44,9 @@ Toolkit.run(
       }
 
       let text = `${ACTION_TYPE} audit`
-      if (ACTION_TYPE === 'unreleased') {
+      if (ACTION_TYPE === Actions.UNRELEASED) {
         text += buildUnreleasedCommitsMessage(branch, commits, initiatedBy)
-      } else if (ACTION_TYPE === 'needs-manual') {
+      } else if (ACTION_TYPE === Actions.NEEDS_MANUAL) {
         text += buildNeedsManualPRsMessage(
           branch,
           commits,
