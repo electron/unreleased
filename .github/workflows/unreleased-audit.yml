@@ -5,7 +5,7 @@ on:
   - cron: '0 16 * * 1'
 
 jobs:
-  performUnreleasedAudit:
+  audit:
     name: Perform Unreleased Audit
     runs-on: ubuntu-latest
     steps:

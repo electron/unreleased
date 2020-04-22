@@ -43,7 +43,7 @@ Toolkit.run(
         )
       }
 
-      let text = `${ACTION_TYPE} audit`
+      let text
       if (ACTION_TYPE === Actions.UNRELEASED) {
         text += buildUnreleasedCommitsMessage(branch, commits, initiatedBy)
       } else if (ACTION_TYPE === Actions.NEEDS_MANUAL) {

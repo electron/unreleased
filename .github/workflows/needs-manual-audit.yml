@@ -2,15 +2,15 @@ name: Perform Manual Backport Audit
 
 on:
   schedule:
-  - cron: '10 16 * * 3'
+  - cron: '0 16 * * 3'
 
 jobs:
-  performUnreleasedAudit:
+  audit:
     name: Perform  Manual Backport Audit
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: Check unreleased commits
+    - name: Check PRs needing manual backport
       uses: ./
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
