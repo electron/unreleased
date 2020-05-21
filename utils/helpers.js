@@ -32,17 +32,26 @@ async function getSupportedBranches() {
   const resp = await fetch(branchEndpoint)
 
   let branches = await resp.json()
-  branches = branches
-    .filter(branch => {
-      return branch.protected && RELEASE_BRANCH_PATTERN.test(branch.name)
-    })
-    .map(b => b.name)
+  const releaseBranches = branches.filter(branch => {
+    return branch.name.match(SUPPORTED_BRANCH_PATTERN)
+  });
+  const filtered = {};
+  releaseBranches.sort((a, b) => {
+    const aParts = a.name.split('-');
+    const bParts = b.name.split('-');
+    for (let i = 0; i < aParts.length; i+=1) {
+      if (aParts[i] === bParts[i]) continue;
+      return parseInt(aParts[i], 10) - parseInt(bParts[i], 10);
+    }
+    return 0;
+  }).forEach((branch) => {
+    return (filtered[branch.name.split('-')[0]] = branch.name);
+  });
 
-  const filtered = {}
-  branches.sort().forEach(branch => (filtered[branch.charAt(0)] = branch))
-  return Object.values(filtered)
-    .sort()
-    .slice(-NUM_SUPPORTED_VERSIONS)
+  const values = Object.values(filtered);
+  return values
+    .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+    .slice(-NUM_SUPPORTED_VERSIONS);
 }
 
 // Post a message to a Slack workspace
