@@ -1,6 +1,6 @@
-const fetch = require('node-fetch')
-const https = require('https')
-const url = require('url')
+const fetch = require('node-fetch');
+const https = require('https');
+const url = require('url');
 
 const {
   ORGANIZATION_NAME,
@@ -8,7 +8,7 @@ const {
   GH_API_PREFIX,
   NUM_SUPPORTED_VERSIONS,
   RELEASE_BRANCH_PATTERN,
-} = require('../constants')
+} = require('../constants');
 
 // Add a live PR link to a given commit
 function linkifyPRs(msg) {
@@ -16,37 +16,39 @@ function linkifyPRs(msg) {
     /#(\d+)/g,
     (_, pr_id) =>
       `<https://github.com/${ORGANIZATION_NAME}/${REPO_NAME}/pull/${pr_id}|${pr_id}>`,
-  )
+  );
 }
 
 // Determine whether a given release is in draft state or not
 async function releaseIsDraft(tag) {
-  const releaseEndpoint = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/releases/tags/${tag}`
-  const res = await fetch(releaseEndpoint)
-  return res.status === 404
+  const releaseEndpoint = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/releases/tags/${tag}`;
+  const res = await fetch(releaseEndpoint);
+  return res.status === 404;
 }
 
 // Get array of currently supported branches
 async function getSupportedBranches() {
-  const branchEndpoint = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/branches`
-  const resp = await fetch(branchEndpoint)
+  const branchEndpoint = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/branches`;
+  const resp = await fetch(branchEndpoint);
 
-  let branches = await resp.json()
+  let branches = await resp.json();
   const releaseBranches = branches.filter(branch => {
-    return branch.name.match(SUPPORTED_BRANCH_PATTERN)
+    return branch.name.match(RELEASE_BRANCH_PATTERN);
   });
   const filtered = {};
-  releaseBranches.sort((a, b) => {
-    const aParts = a.name.split('-');
-    const bParts = b.name.split('-');
-    for (let i = 0; i < aParts.length; i+=1) {
-      if (aParts[i] === bParts[i]) continue;
-      return parseInt(aParts[i], 10) - parseInt(bParts[i], 10);
-    }
-    return 0;
-  }).forEach((branch) => {
-    return (filtered[branch.name.split('-')[0]] = branch.name);
-  });
+  releaseBranches
+    .sort((a, b) => {
+      const aParts = a.name.split('-');
+      const bParts = b.name.split('-');
+      for (let i = 0; i < aParts.length; i += 1) {
+        if (aParts[i] === bParts[i]) continue;
+        return parseInt(aParts[i], 10) - parseInt(bParts[i], 10);
+      }
+      return 0;
+    })
+    .forEach(branch => {
+      return (filtered[branch.name.split('-')[0]] = branch.name);
+    });
 
   const values = Object.values(filtered);
   return values
@@ -62,13 +64,13 @@ const postToSlack = (data, postUrl) => {
     headers: {
       'content-type': 'application/json',
     },
-  })
-  r.end(JSON.stringify(data))
-}
+  });
+  r.end(JSON.stringify(data));
+};
 
 module.exports = {
   releaseIsDraft,
   getSupportedBranches,
   linkifyPRs,
   postToSlack,
-}
+};

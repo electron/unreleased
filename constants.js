@@ -1,15 +1,15 @@
-const GH_API_PREFIX = 'https://api.github.com'
+const GH_API_PREFIX = 'https://api.github.com';
 
-const ORGANIZATION_NAME = process.env.ORGANIZATION_NAME || 'electron'
-const REPO_NAME = process.env.REPO_NAME || 'electron'
+const ORGANIZATION_NAME = process.env.ORGANIZATION_NAME || 'electron';
+const REPO_NAME = process.env.REPO_NAME || 'electron';
 
-const NUM_SUPPORTED_VERSIONS = process.env.NUM_SUPPORTED_VERSIONS || 4
+const NUM_SUPPORTED_VERSIONS = process.env.NUM_SUPPORTED_VERSIONS || 4;
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN
-const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN
-const ACTION_TYPE = process.env.ACTION_TYPE
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
+const ACTION_TYPE = process.env.ACTION_TYPE;
 
-const RELEASE_BRANCH_PATTERN = /(\d)+-(?:(?:[0-9]+-x$)|(?:x+-y$))/
+const RELEASE_BRANCH_PATTERN = /^[0-9]+-([0-9]+-x|x-y)$/;
 
 module.exports = {
   GH_API_PREFIX,
@@ -20,4 +20,4 @@ module.exports = {
   ACTION_TYPE,
   NUM_SUPPORTED_VERSIONS,
   GITHUB_TOKEN,
-}
+};
