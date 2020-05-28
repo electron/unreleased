@@ -11,16 +11,20 @@ const {
   fetchNeedsManualPRs,
 } = require('./utils/needs-manual-prs');
 
+const {
+  SLACK_BOT_TOKEN,
+  ACTION_TYPE,
+  AUDIT_POST_CHANNEL,
+} = require('./constants');
+
 const Actions = {
   UNRELEASED: 'unreleased',
   NEEDS_MANUAL: 'needs-manual',
 };
 
 const { getSupportedBranches } = require('./utils/helpers');
-const { SLACK_BOT_TOKEN, ACTION_TYPE } = require('./constants');
 
 const slackWebClient = new WebClient(SLACK_BOT_TOKEN);
-const AUDIT_POST_CHANNEL = process.env.AUDIT_POST_CHANNEL || '#wg-releases';
 
 Toolkit.run(
   async tools => {
