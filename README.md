@@ -21,7 +21,7 @@ You can also set the number of currently supported release lines with the `NUM_S
 An unreleased commit audit can be triggered via Slack using the following:
 
 ```sh
-/check-unreleased <branch-name>
+/check-unreleased <branch_name>
 ```
 
 where `branch-name` matches the name of a release line branch of the desired repository.
@@ -29,7 +29,7 @@ where `branch-name` matches the name of a release line branch of the desired rep
 Example:
 
 ```sh
-/check-unreleased 5-0-x
+/check-unreleased 9-x-y
 ```
 
 To manually query the status of all currently supported release branches:
@@ -43,7 +43,7 @@ To manually query the status of all currently supported release branches:
 An unmerged pull request audit can be triggered via Slack using the following:
 
 ```sh
-/check-unmerged <branch-name>
+/check-unmerged <branch_name>
 ```
 
 where `branch-name` matches the name of a release line branch of the repository.
@@ -51,7 +51,7 @@ where `branch-name` matches the name of a release line branch of the repository.
 Example:
 
 ```sh
-/check-unmerged 5-0-x
+/check-unmerged 10-x-y
 ```
 
 ### Check Needs Manual
@@ -59,7 +59,7 @@ Example:
 An audit of pull requests needing manual backport to a particular release line can be triggered via Slack using the following:
 
 ```sh
-/check-needs-manual <branch-name>
+/check-needs-manual <branch_name> <author> <remind>
 ```
 
 where `branch-name` matches the name of a release line branch of the repository.
@@ -67,23 +67,54 @@ where `branch-name` matches the name of a release line branch of the repository.
 Example:
 
 ```sh
-/check-needs-manual 5-0-x
+/check-needs-manual 8-x-y
 ```
 
-This can also be scoped by author of the original PR. For example:
+#### Scoping By Author 
+
+This command can be scoped by author of the original PR. For example:
 
 ```sh
-/check-needs-manual 5-0-x codebytere
+/check-needs-manual 8-x-y codebytere
 ```
 
-will return all pull requests needing manual backport to a particular release line where the author of the original PR was @codebytere.
+will return all pull requests needing manual backport to a particular release line where the author of the original PR was @codebytere
+
+```
+PRs needing manual backport to 8-x-y (from @codebytere):
+* #23782 - fix: volume key globalShortcut registration
+* #23776 - fix: asynchronous URL loading in BW Proxy
+* #22342 - fix: don't run environment bootstrapper
+There are 3 PRs needing manual backport to 8-x-y!
+```
+
+#### Reminding Authors
+
+You can `@mention` authors in the audit to remind them of the manual backports they need to handle:
+
+```sh
+/check-needs-manual 8-x-y remind
+```
+
+This will produce a list similar to the following:
+
+```
+PRs needing manual backport to 8-x-y (from @codebytere):
+* #23782 - fix: volume key globalShortcut registration (@codebytere)
+* #23776 - fix: asynchronous URL loading in BW Proxy (@codebytere)
+* #23678 - fix: read GTK dark theme setting on Linux (@zcbenz)
+* #23653 - docs: errors in isolated world are not dispatched to foreign worlds (@zcbenz)
+* #23415 - test: skip "handles Promise timeouts correctly" when ELECTRON_RUN_AS_NODE is disabled (@miniak)
+* #22342 - fix: don't run environment bootstrapper (@codebytere)
+There are 6 PRs needing manual backport to 8-x-y!
+```
 
 ### Perform Pre-Release Audit
 
-This combines the needs-manual audit with the unmerged audit to return a full list of action items that may needs to occur before a beta or stable release.
+A pre-release audit combines the needs-manual audit with the unmerged audit to return a full list of action items that may needs to occur before a beta or stable release.
 
 ```sh
-/audit-pre-release <branch-name>
+/audit-pre-release <branch_name>
 ```
 
 where `branch-name` matches the name of a release line branch of the repository.
@@ -91,5 +122,5 @@ where `branch-name` matches the name of a release line branch of the repository.
 Example:
 
 ```sh
-/audit-pre-release 5-0-x
+/audit-pre-release 8-x-y
 ```
