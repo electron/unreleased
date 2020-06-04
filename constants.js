@@ -11,7 +11,7 @@ const ACTION_TYPE = process.env.ACTION_TYPE || 'unreleased';
 
 const AUDIT_POST_CHANNEL = process.env.AUDIT_POST_CHANNEL || '#wg-releases';
 
-const RELEASE_BRANCH_PATTERN = /^[0-9]+-([0-9]+-x|x-y)$/;
+const RELEASE_BRANCH_PATTERN = /^(\d)+-(?:(?:[0-9]+-x$)|(?:x+-y$))$/;
 
 module.exports = {
   ACTION_TYPE,
