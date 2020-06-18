@@ -28,7 +28,7 @@ function buildNeedsManualPRsMessage(branch, prs, shouldRemind) {
       let line = `* <${c.html_url}|#${c.number}> - ${
         c.title.split(/[\r\n]/, 1)[0]
       }`;
-      if (shouldRemind) line += ` (<@${c.user.login}>)`;
+      if (shouldRemind) line += ` (<@${c.user.login.toLowerCase()}>)`;
       return line;
     })
     .join('\n');
