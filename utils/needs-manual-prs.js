@@ -37,7 +37,7 @@ function buildNeedsManualPRsMessage(branch, prs, shouldRemind) {
     })
     .join('\n');
 
-  formattedPRs += `\n *There are ${prs.length} PRs needing manual backport to \`${branch}\`!*`;
+  formattedPRs += `\n *${prs.length} PRs needing manual backport to \`${branch}\`!*`;
 
   return formattedPRs;
 }
