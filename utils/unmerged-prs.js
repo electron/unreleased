@@ -14,6 +14,10 @@ async function fetchUnmergedPRs(branch) {
 
 // Build the text blob that will be posted to Slack
 function buildUnmergedPRsMessage(branch, prs) {
+  if (prs.length === 0) {
+    return `*There are no unmerged PRs targeting \`${branch}\`!*`;
+  }
+
   let formattedPRs = prs
     .map(c => {
       return `- ${c.title.split(/[\r\n]/, 1)[0]} (<${c.html_url}|#${
@@ -22,9 +26,7 @@ function buildUnmergedPRsMessage(branch, prs) {
     })
     .join('\n');
 
-  if (prs.length !== 0) {
-    formattedPRs += `\n *There are ${prs.length} unmerged PRs targeting \`${branch}\`!*`;
-  }
+  formattedPRs += `\n *There are ${prs.length} unmerged PRs targeting \`${branch}\`!*`;
 
   return formattedPRs;
 }

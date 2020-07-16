@@ -23,6 +23,10 @@ async function fetchNeedsManualPRs(branch, prAuthor) {
 
 // Build the text blob that will be posted to Slack
 function buildNeedsManualPRsMessage(branch, prs, shouldRemind) {
+  if (prs.length === 0) {
+    return `*No PRs needing manual backport to ${branch}*`;
+  }
+
   let formattedPRs = prs
     .map(c => {
       let line = `* <${c.html_url}|#${c.number}> - ${
@@ -33,9 +37,7 @@ function buildNeedsManualPRsMessage(branch, prs, shouldRemind) {
     })
     .join('\n');
 
-  if (prs.length !== 0) {
-    formattedPRs += `\n *There are ${prs.length} PRs needing manual backport to \`${branch}\`!*`;
-  }
+  formattedPRs += `\n *There are ${prs.length} PRs needing manual backport to \`${branch}\`!*`;
 
   return formattedPRs;
 }
