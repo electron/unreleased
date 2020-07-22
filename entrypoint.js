@@ -60,6 +60,7 @@ Toolkit.run(
 
       const result = await slackWebClient.chat.postMessage({
         channel: AUDIT_POST_CHANNEL,
+        unfurl_links: false,
         text,
       });
 
