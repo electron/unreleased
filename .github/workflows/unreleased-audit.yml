@@ -9,7 +9,9 @@ jobs:
     name: Perform Unreleased Audit
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v2
+      with:
+        ref: main
     - name: Check unreleased commits
       uses: ./
       env:
