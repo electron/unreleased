@@ -1,4 +1,4 @@
-name: Lint
+name: Test
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         version: 14.x
-    - name: Lint
+    - name: Test
       run: |
         npm ci
-        npm run lint
+        npm test
