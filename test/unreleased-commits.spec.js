@@ -1,5 +1,7 @@
 const { expect } = require('chai');
-const { buildUnreleasedCommitsMessage } = require('../utils/unreleased-commits');
+const {
+  buildUnreleasedCommitsMessage,
+} = require('../utils/unreleased-commits');
 
 describe('unmerged', () => {
   it('can build the unmerged PRs message', () => {

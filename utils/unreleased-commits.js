@@ -1,9 +1,14 @@
 const { getAll, getAllGenerator } = require('./commits-helpers');
 const { linkifyPRs, releaseIsDraft } = require('./helpers');
 
-const { ORGANIZATION_NAME, REPO_NAME, GH_API_PREFIX } = require('../constants');
+const {
+  ORGANIZATION_NAME,
+  REPO_NAME,
+  GH_API_PREFIX,
+  BUMP_COMMIT_PATTERN,
+} = require('../constants');
 
-// Fetch all unreleased commits for a specified release line branch
+// Fetch all unreleased commits for a specified release line branch.
 async function fetchUnreleasedCommits(branch) {
   const tags = await getAll(
     `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/tags`,
@@ -17,12 +22,16 @@ async function fetchUnreleasedCommits(branch) {
       const isDraft = await releaseIsDraft(tag.name);
       if (!isDraft) break;
     }
+
+    // Filter out bump commits.
+    if (BUMP_COMMIT_PATTERN.test(commit.message)) continue;
+
     unreleased.push(commit);
   }
   return unreleased;
 }
 
-// Build the text blob that will be posted to Slack
+// Build the text blob that will be posted to Slack.
 function buildUnreleasedCommitsMessage(branch, commits, initiator) {
   if (!commits || commits.length === 0)
     return `*No unreleased commits on ${branch}*`;

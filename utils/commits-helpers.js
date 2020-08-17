@@ -3,14 +3,14 @@ const fetch = require('node-fetch');
 const { GITHUB_TOKEN } = require('../constants');
 
 // Formulate a list of all commits based on a certain url endpoint
-// for a release tag
+// for a release tag.
 async function getAll(urlEndpoint) {
   const objects = [];
   for await (const obj of getAllGenerator(urlEndpoint)) objects.push(obj);
   return objects;
 }
 
-// Generate and iterate through the JSON blob representing commits
+// Generate and iterate through the JSON blob representing commits.
 async function* getAllGenerator(urlEndpoint) {
   let next = urlEndpoint;
   while (next) {
@@ -33,7 +33,7 @@ async function* getAllGenerator(urlEndpoint) {
 
     if (!resp.headers.get('link')) break;
 
-    // try to get the next link from the `link` header
+    // Try to get the next link from the `link` header.
     // ex. this link:
     // <https://api.github.com/repositories/9384267/tags?page=15>; rel="prev",
     // <https://api.github.com/repositories/9384267/tags?page=17>; rel="next",

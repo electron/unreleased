@@ -2,7 +2,7 @@ const { getAllGenerator } = require('./commits-helpers');
 
 const { ORGANIZATION_NAME, REPO_NAME, GH_API_PREFIX } = require('../constants');
 
-// Fetch all PRs targeting a specified release line branch that have NOT been merged
+// Fetch all PRs targeting a specified release line branch that have NOT been merged.
 async function fetchUnmergedPRs(branch) {
   const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/pulls?base=${branch}`;
   const unmerged = [];
@@ -12,7 +12,7 @@ async function fetchUnmergedPRs(branch) {
   return unmerged;
 }
 
-// Build the text blob that will be posted to Slack
+// Build the text blob that will be posted to Slack.
 function buildUnmergedPRsMessage(branch, prs) {
   if (prs.length === 0) {
     return `*No unmerged PRs targeting \`${branch}\`!*`;

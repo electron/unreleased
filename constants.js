@@ -13,9 +13,12 @@ const AUDIT_POST_CHANNEL = process.env.AUDIT_POST_CHANNEL || '#wg-releases';
 
 const RELEASE_BRANCH_PATTERN = /^(\d)+-(?:(?:[0-9]+-x$)|(?:x+-y$))$/;
 
+const BUMP_COMMIT_PATTERN = /Bump v(\d)+.(\d)+.(\d)+(-(beta|nightly)(.\d+))?/;
+
 module.exports = {
   ACTION_TYPE,
   AUDIT_POST_CHANNEL,
+  BUMP_COMMIT_PATTERN,
   GH_API_PREFIX,
   GITHUB_TOKEN,
   NUM_SUPPORTED_VERSIONS,

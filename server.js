@@ -87,7 +87,7 @@ app.post('/unmerged', async (req, res) => {
 });
 
 // Check for pull requests which have been merged to master and labeled
-// with target/BRANCH_NAME that trop failed for and which still need manual backports
+// with target/BRANCH_NAME that trop failed for and which still need manual backports.
 app.post('/needs-manual', async (req, res) => {
   const branches = await getSupportedBranches();
   const REMIND = 'remind';
@@ -181,7 +181,7 @@ app.post('/unreleased', async (req, res) => {
     name: profile.display_name_normalized,
   };
 
-  // Allow for manual batch audit of all supported release branches
+  // Allow for manual batch audit of all supported release branches.
   if (auditTarget === 'all') {
     console.log(
       `${initiator.name} triggered audit for all supported release branches`,
@@ -286,7 +286,7 @@ app.post('/audit-pre-release', async (req, res) => {
   }
 
   try {
-    // In a prerelease audit, we don't want to scope by author so we pass null intentionally
+    // In a prerelease audit, we don't want to scope by author so we pass null intentionally.
     const needsManualPRs = await fetchNeedsManualPRs(branch, null);
     console.log(
       `Found ${needsManualPRs.length} PRs needing manual backport on ${branch}`,

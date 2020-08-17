@@ -5,7 +5,11 @@ describe('needs manual', () => {
   it('can build the needs-manual PRs message', () => {
     const prs = require('./fixtures/needs-manual.json');
     const branch = '8-x-y';
-    const message = buildNeedsManualPRsMessage(branch, prs, null /* shouldRemind */);
+    const message = buildNeedsManualPRsMessage(
+      branch,
+      prs,
+      null /* shouldRemind */,
+    );
 
     const expected = `- <https://github.com/electron/electron/pull/24856|#24856> - build: ensure symbol files are named lowercase on disk so that boto can find them
 - <https://github.com/electron/electron/pull/24534|#24534> - fix: ensure that errors thrown in the context bridge are created in the correct context
@@ -20,7 +24,11 @@ describe('needs manual', () => {
   it('can build the needs-manual PRs message with remind', () => {
     const prs = require('./fixtures/needs-manual.json');
     const branch = '8-x-y';
-    const message = buildNeedsManualPRsMessage(branch, prs, true /* shouldRemind */);
+    const message = buildNeedsManualPRsMessage(
+      branch,
+      prs,
+      true /* shouldRemind */,
+    );
 
     const expected = `- <https://github.com/electron/electron/pull/24856|#24856> - build: ensure symbol files are named lowercase on disk so that boto can find them (<@marshallofsound>)
 - <https://github.com/electron/electron/pull/24534|#24534> - fix: ensure that errors thrown in the context bridge are created in the correct context (<@marshallofsound>)
@@ -31,4 +39,4 @@ describe('needs manual', () => {
 
     expect(message).to.equal(expected);
   });
-})
+});

@@ -10,7 +10,7 @@ const {
   RELEASE_BRANCH_PATTERN,
 } = require('../constants');
 
-// Add a live PR link to a given commit
+// Add a live PR link to a given commit.
 function linkifyPRs(msg) {
   return msg.replace(
     /#(\d+)/g,
@@ -19,14 +19,14 @@ function linkifyPRs(msg) {
   );
 }
 
-// Determine whether a given release is in draft state or not
+// Determine whether a given release is in draft state or not.
 async function releaseIsDraft(tag) {
   const releaseEndpoint = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/releases/tags/${tag}`;
   const res = await fetch(releaseEndpoint);
   return res.status === 404;
 }
 
-// Get array of currently supported branches
+// Get array of currently supported branches.
 async function getSupportedBranches() {
   const branchEndpoint = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/branches`;
   const resp = await fetch(branchEndpoint);
@@ -56,7 +56,7 @@ async function getSupportedBranches() {
     .slice(-NUM_SUPPORTED_VERSIONS);
 }
 
-// Post a message to a Slack workspace
+// Post a message to a Slack workspace.
 const postToSlack = (data, postUrl) => {
   const r = https.request({
     ...url.parse(postUrl),
