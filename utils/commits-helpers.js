@@ -54,7 +54,7 @@ async function* getAllGenerator(urlEndpoint) {
 
 function getReleaseBlockers(prs) {
   return prs.filter(pr => {
-    return pr.labels.some(label => label === BLOCKS_RELEASE_LABEL);
+    return pr.labels.some(label => label.name === BLOCKS_RELEASE_LABEL);
   });
 }
 

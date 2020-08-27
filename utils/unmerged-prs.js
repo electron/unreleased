@@ -1,4 +1,4 @@
-const { getAllGenerator } = require('./commits-helpers');
+const { getAllGenerator, getReleaseBlockers } = require('./commits-helpers');
 
 const { ORGANIZATION_NAME, REPO_NAME, GH_API_PREFIX } = require('../constants');
 
@@ -24,13 +24,13 @@ function buildUnmergedPRsMessage(branch, prs) {
 
   let message = prs.map(formatMessage).join('\n');
 
-  message += `\n *${prs.length} unmerged PRs targeting \`${branch}\`!*`;
+  message += `\n *${prs.length} unmerged PR(s) targeting \`${branch}\`!*`;
 
   const releaseBlockers = getReleaseBlockers(prs);
   if (releaseBlockers.length > 0) {
     message += '\n\n';
     message += releaseBlockers.map(formatMessage).join('\n');
-    message += `\n *${releaseBlockers.length} unmerged PRs blocking release of \`${branch}\`!*`;
+    message += `\n *${releaseBlockers.length} unmerged PR(s) blocking release of \`${branch}\`!*`;
   }
 
   return message;
