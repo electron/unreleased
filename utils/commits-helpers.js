@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 
-const { GITHUB_TOKEN } = require('../constants');
+const { BLOCKS_RELEASE_LABEL, GITHUB_TOKEN } = require('../constants');
 
 // Formulate a list of all commits based on a certain url endpoint
 // for a release tag.
@@ -52,7 +52,14 @@ async function* getAllGenerator(urlEndpoint) {
   }
 }
 
+function getReleaseBlockers(prs) {
+  return prs.filter(pr => {
+    return pr.labels.some(label => label === BLOCKS_RELEASE_LABEL);
+  });
+}
+
 module.exports = {
   getAll,
   getAllGenerator,
+  getReleaseBlockers,
 };

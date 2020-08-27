@@ -2,6 +2,10 @@ const { getAllGenerator } = require('./commits-helpers');
 
 const { ORGANIZATION_NAME, REPO_NAME, GH_API_PREFIX } = require('../constants');
 
+const formatMessage = pr => {
+  return `- ${pr.title.split(/[\r\n]/, 1)[0]} (<${pr.html_url}|#${pr.number}>)`;
+};
+
 // Fetch all PRs targeting a specified release line branch that have NOT been merged.
 async function fetchUnmergedPRs(branch) {
   const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/pulls?base=${branch}`;
@@ -18,17 +22,18 @@ function buildUnmergedPRsMessage(branch, prs) {
     return `*No unmerged PRs targeting \`${branch}\`!*`;
   }
 
-  let formattedPRs = prs
-    .map(c => {
-      return `- ${c.title.split(/[\r\n]/, 1)[0]} (<${c.html_url}|#${
-        c.number
-      }>)`;
-    })
-    .join('\n');
+  let message = prs.map(formatMessage).join('\n');
 
-  formattedPRs += `\n *${prs.length} unmerged PRs targeting \`${branch}\`!*`;
+  message += `\n *${prs.length} unmerged PRs targeting \`${branch}\`!*`;
 
-  return formattedPRs;
+  const releaseBlockers = getReleaseBlockers(prs);
+  if (releaseBlockers.length > 0) {
+    message += '\n\n';
+    message += releaseBlockers.map(formatMessage).join('\n');
+    message += `\n *${releaseBlockers.length} unmerged PRs blocking release of \`${branch}\`!*`;
+  }
+
+  return message;
 }
 
 module.exports = {
