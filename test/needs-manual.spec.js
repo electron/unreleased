@@ -16,7 +16,7 @@ describe('needs manual', () => {
 - <https://github.com/electron/electron/pull/24114|#24114> - feat: add worldSafe flag for executeJS results
 - <https://github.com/electron/electron/pull/24014|#24014> - fix: Close protocol response streams when aborted
 - <https://github.com/electron/electron/pull/20625|#20625> - fix: loading dedicated/shared worker scripts over custom protocol
- *5 PRs needing manual backport to \`8-x-y\`!*`;
+ *5 PR(s) needing manual backport to \`8-x-y\`!*`;
 
     expect(message).to.equal(expected);
   });
@@ -35,7 +35,7 @@ describe('needs manual', () => {
 - <https://github.com/electron/electron/pull/24114|#24114> - feat: add worldSafe flag for executeJS results (<@marshallofsound>)
 - <https://github.com/electron/electron/pull/24014|#24014> - fix: Close protocol response streams when aborted (<@pfrazee>)
 - <https://github.com/electron/electron/pull/20625|#20625> - fix: loading dedicated/shared worker scripts over custom protocol (<@deepak1556>)
- *5 PRs needing manual backport to \`8-x-y\`!*`;
+ *5 PR(s) needing manual backport to \`8-x-y\`!*`;
 
     expect(message).to.equal(expected);
   });

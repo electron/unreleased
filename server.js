@@ -57,11 +57,11 @@ app.post('/unmerged', async (req, res) => {
 
   try {
     const prs = await fetchUnmergedPRs(branch);
-    console.log(`Found ${prs.length} unmerged PRs targeting ${branch}`);
+    console.log(`Found ${prs.length} unmerged PR(s) targeting ${branch}`);
 
     let message;
     if (!prs || prs.length === 0) {
-      message = `*No PRs needing manual backport to ${branch}*`;
+      message = `*No PR(s) needing manual backport to ${branch}*`;
     } else {
       message = `Unmerged pull requests targeting *${branch}* (from <@${initiator.id}>):\n`;
       message += buildUnmergedPRsMessage(branch, prs);
@@ -138,17 +138,19 @@ app.post('/needs-manual', async (req, res) => {
   try {
     const branchesToCheck = branch === 'all' ? branches : [branch];
 
-    let message;
+    let messages = [];
     for (const branch of branchesToCheck) {
       const prs = await fetchNeedsManualPRs(branch, author);
       console.log(`Found ${prs.length} prs on ${branch}`);
 
+      let message;
       if (!prs || prs.length === 0) {
-        message = `*No PRs needing manual backport to ${branch}*`;
+        message = `*No PR(s) needing manual backport to ${branch}*`;
       } else {
-        message += `PRs needing manual backport to *${branch}* (from <@${initiator.id}>):\n`;
+        message = `PR(s) needing manual backport to *${branch}* (from <@${initiator.id}>):\n`;
         message += buildNeedsManualPRsMessage(branch, prs, shouldRemind);
       }
+      messages.push(message);
     }
 
     // If someone is running an audit on the needs-manual PRs that only
@@ -158,7 +160,7 @@ app.post('/needs-manual', async (req, res) => {
     postToSlack(
       {
         response_type: responseType,
-        text: message,
+        text: messages.join('\n'),
       },
       req.body.response_url,
     );
@@ -301,7 +303,7 @@ app.post('/audit-pre-release', async (req, res) => {
     // In a prerelease audit, we don't want to scope by author so we pass null intentionally.
     const needsManualPRs = await fetchNeedsManualPRs(branch, null);
     console.log(
-      `Found ${needsManualPRs.length} PRs needing manual backport on ${branch}`,
+      `Found ${needsManualPRs.length} PR(s) needing manual backport on ${branch}`,
     );
 
     const unmergedPRs = await fetchUnmergedPRs(branch);
@@ -309,12 +311,12 @@ app.post('/audit-pre-release', async (req, res) => {
 
     let message;
     if (needsManualPRs.length + unmergedPRs.length === 0) {
-      message = `*No PRs unmerged or needing manual backport for ${branch}*`;
+      message = `*No PR(s) unmerged or needing manual backport for ${branch}*`;
     } else {
       message = `Pre-release audit for *${branch}* (from <@${initiator.id}>)\n`;
 
       if (needsManualPRs.length !== 0) {
-        message += `PRs needing manual backport to *${branch}*:\n`;
+        message += `PR(s) needing manual backport to *${branch}*:\n`;
         message += `${buildNeedsManualPRsMessage(branch, needsManualPRs)}\n`;
       }
 

@@ -85,7 +85,7 @@ PRs needing manual backport to 8-x-y (from @codebytere):
 * #23782 - fix: volume key globalShortcut registration
 * #23776 - fix: asynchronous URL loading in BW Proxy
 * #22342 - fix: don't run environment bootstrapper
-There are 3 PRs needing manual backport to 8-x-y!
+There are 3 PR(s) needing manual backport to 8-x-y!
 ```
 
 #### Reminding Authors
@@ -99,14 +99,14 @@ You can `@mention` authors in the audit to remind them of the manual backports t
 This will produce a list similar to the following:
 
 ```
-PRs needing manual backport to 8-x-y (from @codebytere):
+PR(s) needing manual backport to 8-x-y (from @codebytere):
 * #23782 - fix: volume key globalShortcut registration (@codebytere)
 * #23776 - fix: asynchronous URL loading in BW Proxy (@codebytere)
 * #23678 - fix: read GTK dark theme setting on Linux (@zcbenz)
 * #23653 - docs: errors in isolated world are not dispatched to foreign worlds (@zcbenz)
 * #23415 - test: skip "handles Promise timeouts correctly" when ELECTRON_RUN_AS_NODE is disabled (@miniak)
 * #22342 - fix: don't run environment bootstrapper (@codebytere)
-There are 6 PRs needing manual backport to 8-x-y!
+There are 6 PR(s) needing manual backport to 8-x-y!
 ```
 
 ### Perform Pre-Release Audit
