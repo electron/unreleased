@@ -117,7 +117,9 @@ app.post('/needs-manual', async (req, res) => {
     `${initiator.name} initiated needs-manual audit for branch: ${branch}`,
   );
 
-  if (!RELEASE_BRANCH_PATTERN.test(branch) || !branches.includes(branch)) {
+  const isInvalidBranch =
+    !RELEASE_BRANCH_PATTERN.test(branch) || !branches.includes(branch);
+  if (branch !== 'all' && isInvalidBranch) {
     console.error(`${branch} is not a valid branch`);
     postToSlack(
       {
@@ -134,15 +136,19 @@ app.post('/needs-manual', async (req, res) => {
   }
 
   try {
-    const prs = await fetchNeedsManualPRs(branch, author);
-    console.log(`Found ${prs.length} prs on ${branch}`);
+    const branchesToCheck = branch === 'all' ? branches : [branch];
 
     let message;
-    if (!prs || prs.length === 0) {
-      message = `*No PRs needing manual backport to ${branch}*`;
-    } else {
-      message = `PRs needing manual backport to *${branch}* (from <@${initiator.id}>):\n`;
-      message += buildNeedsManualPRsMessage(branch, prs, shouldRemind);
+    for (const branch of branchesToCheck) {
+      const prs = await fetchNeedsManualPRs(branch, author);
+      console.log(`Found ${prs.length} prs on ${branch}`);
+
+      if (!prs || prs.length === 0) {
+        message = `*No PRs needing manual backport to ${branch}*`;
+      } else {
+        message += `PRs needing manual backport to *${branch}* (from <@${initiator.id}>):\n`;
+        message += buildNeedsManualPRsMessage(branch, prs, shouldRemind);
+      }
     }
 
     // If someone is running an audit on the needs-manual PRs that only

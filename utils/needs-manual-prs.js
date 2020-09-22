@@ -16,7 +16,7 @@ async function fetchNeedsManualPRs(branch, prAuthor) {
   const url = baseUrl + `q=${type}+${repo}+${state}+${label}${author}`;
 
   const resp = await fetch(url);
-  const prs = (await resp.json()).items;
+  const { items: prs } = await resp.json();
 
   return prs;
 }
