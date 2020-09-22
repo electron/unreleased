@@ -42,14 +42,15 @@ app.post('/unmerged', async (req, res) => {
   );
 
   if (!RELEASE_BRANCH_PATTERN.test(branch)) {
-    console.log(`${branch} is not a valid branch`);
-    return postToSlack(
+    console.error(`${branch} is not a valid branch`);
+    postToSlack(
       {
         response_type: 'ephemeral',
         text: 'Branch name not valid. Try again?',
       },
       req.body.response_url,
     );
+    return res.status(200).end();
   }
 
   console.log(`Auditing unmerged PRs on branch: ${branch}`);
@@ -73,10 +74,9 @@ app.post('/unmerged', async (req, res) => {
       },
       req.body.response_url,
     );
-
-    return res.status(200).end();
   } catch (err) {
-    return postToSlack(
+    console.error(err);
+    postToSlack(
       {
         response_type: 'ephemeral',
         text: `Error: ${err}`,
@@ -84,6 +84,8 @@ app.post('/unmerged', async (req, res) => {
       req.body.response_url,
     );
   }
+
+  return res.status(200).end();
 });
 
 // Check for pull requests which have been merged to master and labeled
@@ -116,14 +118,15 @@ app.post('/needs-manual', async (req, res) => {
   );
 
   if (!RELEASE_BRANCH_PATTERN.test(branch) || !branches.includes(branch)) {
-    console.log(`${branch} is not a valid branch`);
-    return postToSlack(
+    console.error(`${branch} is not a valid branch`);
+    postToSlack(
       {
         response_type: 'ephemeral',
         text: 'Branch name not valid. Try again?',
       },
       req.body.response_url,
     );
+    return res.status(200).end();
   }
 
   if (author) {
@@ -153,11 +156,9 @@ app.post('/needs-manual', async (req, res) => {
       },
       req.body.response_url,
     );
-
-    return res.status(200).end();
   } catch (err) {
     console.error(err);
-    return postToSlack(
+    postToSlack(
       {
         response_type: 'ephemeral',
         text: `Error: ${err}`,
@@ -165,6 +166,8 @@ app.post('/needs-manual', async (req, res) => {
       req.body.response_url,
     );
   }
+
+  return res.status(200).end();
 });
 
 // Check for commits which have been merged to a release branch but
@@ -201,7 +204,7 @@ app.post('/unreleased', async (req, res) => {
         );
       } catch (err) {
         console.error(err);
-        return postToSlack(
+        postToSlack(
           {
             response_type: 'ephemeral',
             text: `Error: ${err}`,
@@ -210,6 +213,7 @@ app.post('/unreleased', async (req, res) => {
         );
       }
     }
+
     return res.status(200).end();
   }
 
@@ -221,14 +225,15 @@ app.post('/unreleased', async (req, res) => {
     !RELEASE_BRANCH_PATTERN.test(auditTarget) ||
     !branches.includes(auditTarget)
   ) {
-    console.log(`${auditTarget} is not a valid branch`);
-    return postToSlack(
+    console.error(`${auditTarget} is not a valid branch`);
+    postToSlack(
       {
         response_type: 'ephemeral',
         text: 'Branch name not valid. Try again?',
       },
       req.body.response_url,
     );
+    return res.status(200).end();
   }
 
   try {
@@ -242,11 +247,9 @@ app.post('/unreleased', async (req, res) => {
       },
       req.body.response_url,
     );
-
-    return res.status(200).end();
   } catch (err) {
     console.error(err);
-    return postToSlack(
+    postToSlack(
       {
         response_type: 'ephemeral',
         text: `Error: ${err}`,
@@ -254,6 +257,8 @@ app.post('/unreleased', async (req, res) => {
       req.body.response_url,
     );
   }
+
+  return res.status(200).end();
 });
 
 // Combines checks for all PRs that either need manual backport to a given
@@ -275,14 +280,15 @@ app.post('/audit-pre-release', async (req, res) => {
   );
 
   if (!RELEASE_BRANCH_PATTERN.test(branch) || !branches.includes(branch)) {
-    console.log(`${branch} is not a valid branch`);
-    return postToSlack(
+    console.error(`${branch} is not a valid branch`);
+    postToSlack(
       {
         response_type: 'ephemeral',
         text: 'Branch name not valid. Try again?',
       },
       req.body.response_url,
     );
+    return res.status(200).end();
   }
 
   try {
@@ -319,11 +325,9 @@ app.post('/audit-pre-release', async (req, res) => {
       },
       req.body.response_url,
     );
-
-    return res.status(200).end();
   } catch (err) {
     console.error(err);
-    return postToSlack(
+    postToSlack(
       {
         response_type: 'ephemeral',
         text: `Error: ${err}`,
@@ -331,6 +335,8 @@ app.post('/audit-pre-release', async (req, res) => {
       req.body.response_url,
     );
   }
+
+  return res.status(200).end();
 });
 
 const listener = app.listen(process.env.PORT, () => {
