@@ -61,7 +61,7 @@ app.post('/unmerged', async (req, res) => {
 
     let message;
     if (!prs || prs.length === 0) {
-      message = `*No PR(s) needing manual backport to ${branch}*`;
+      message = `*No PR(s) pending merge to ${branch}*`;
     } else {
       message = `Unmerged pull requests targeting *${branch}* (from <@${initiator.id}>):\n`;
       message += buildUnmergedPRsMessage(branch, prs);
