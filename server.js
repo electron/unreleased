@@ -380,16 +380,23 @@ app.post('/review-queue', async (req, res) => {
 
     let message;
     if (!prs || prs.length === 0) {
-      message = `*No PRs with prefix '${prefix}' needing review*`;
+      message = `*No open PRs with label \`${prefix}/requested 🗳\`*`;
     } else {
       message = `${prs.length} PR${
         prs.length === 1 ? '' : 's'
       } awaiting ${prefix} (from <@${initiator.id}>):\n`;
       message += prs
-        .map(
-          c =>
-            `- <${c.html_url}|#${c.number}> - ${c.title.split(/[\r\n]/, 1)[0]}`,
-        )
+        .map(c => {
+          const daysOld = Math.round(
+            (+new Date() - +new Date(c.created_at)) / (1000 * 60 * 60 * 24),
+          );
+          const parts = [
+            `[#${c.number}] <${c.html_url}|${c.title.split(/[\r\n]/, 1)[0]}>`,
+            `_${c.user.login}_`,
+            `_${daysOld} day${daysOld === 1 ? '' : 's'} old_`,
+          ];
+          return `- ${parts.join(' · ')}`;
+        })
         .join('\n');
     }
 
