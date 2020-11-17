@@ -18,7 +18,7 @@ const {
   searchIssues,
 } = require('./utils/issue-search');
 const { postToSlack, getSupportedBranches } = require('./utils/helpers');
-const { RELEASE_BRANCH_PATTERN, SLACK_BOT_TOKEN } = require('./constants');
+const { RELEASE_BRANCH_PATTERN, SLACK_BOT_TOKEN, ORGANIZATION_NAME, REPO_NAME } = require('./constants');
 
 const slackWebClient = new WebClient(SLACK_BOT_TOKEN);
 
