@@ -1,4 +1,4 @@
-const { BLOCKS_RELEASE_LABEL, GITHUB_TOKEN } = require('../constants');
+const { BLOCKS_RELEASE_LABEL } = require('../constants');
 
 function getReleaseBlockers(prs) {
   return prs.filter(pr => {

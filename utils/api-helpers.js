@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const { GITHUB_TOKEN } = require('../constants');
 
 // Formulate a list of all objects based on a certain url endpoint.
 async function getAll(urlEndpoint) {
