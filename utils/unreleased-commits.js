@@ -1,4 +1,4 @@
-const { getAll, getAllGenerator } = require('./commits-helpers');
+const { getAll, getAllGenerator } = require('./api-helpers');
 const { linkifyPRs, releaseIsDraft } = require('./helpers');
 
 const {
