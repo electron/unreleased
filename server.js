@@ -391,7 +391,7 @@ app.post('/review-queue', async (req, res) => {
     postToSlack(
       {
         response_type: 'in_channel',
-        text: messages.join('\n'),
+        text: message,
       },
       req.body.response_url,
     );

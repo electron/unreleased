@@ -1,5 +1,4 @@
 const fetch = require('node-fetch');
-const { getAll } = require('./api-helpers');
 
 // Fetch issues matching the given search criteria.
 // e.g.
@@ -10,9 +9,6 @@ const { getAll } = require('./api-helpers');
 //   label: 'needs-manual-bp/10-x-y'
 // }
 async function searchIssues(search) {
-  const labels = await getAll(
-    `https://api.github.com/repos/${owner}/${repo}/labels`,
-  );
   const baseUrl = `https://api.github.com/search/issues`;
 
   // Assemble final endpoint.

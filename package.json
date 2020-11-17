@@ -4,8 +4,10 @@
   "description": "Checks for and reports commits unreleased for all currently supported branches.",
   "scripts": {
     "start": "node server.js",
-    "lint": "prettier --check '**/*.js'",
-    "format": "prettier --write '**/*.js'",
+    "lint": "npm run prettier:lint && npm run eslint:lint",
+    "eslint:lint": "eslint '**/*.js'",
+    "prettier:lint": "prettier --check '**/*.js'",
+    "prettier:format": "prettier --write '**/*.js'",
     "test": "./node_modules/.bin/mocha"
   },
   "repository": {
@@ -30,6 +32,7 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
+    "eslint": "^7.13.0",
     "mocha": "^8.1.1"
   }
 }
