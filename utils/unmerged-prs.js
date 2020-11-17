@@ -1,4 +1,5 @@
-const { getAllGenerator, getReleaseBlockers } = require('./commits-helpers');
+const { getAll } = require('./api-helpers');
+const { getReleaseBlockers } = require('./commits-helpers');
 
 const { ORGANIZATION_NAME, REPO_NAME, GH_API_PREFIX } = require('../constants');
 
@@ -9,11 +10,7 @@ const formatMessage = pr => {
 // Fetch all PRs targeting a specified release line branch that have NOT been merged.
 async function fetchUnmergedPRs(branch) {
   const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/pulls?base=${branch}`;
-  const unmerged = [];
-  for await (const pr of getAllGenerator(url)) {
-    unmerged.push(pr);
-  }
-  return unmerged;
+  return getAll(url);
 }
 
 // Build the text blob that will be posted to Slack.
