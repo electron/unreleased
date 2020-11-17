@@ -1,4 +1,5 @@
 const { ORGANIZATION_NAME, REPO_NAME } = require('../constants');
+const { searchIssues } = require('./issue-search');
 
 // Fetch all PRs needing review from the API Working Group.
 async function fetchReviewQueuePRs(prefix) {
@@ -14,7 +15,7 @@ async function fetchReviewQueuePRs(prefix) {
 }
 
 // Build the text blob that will be posted to Slack.
-function buildReviewQueueMessage(prs) {
+function buildReviewQueueMessage(prefix, prs) {
   let formattedPRs = prs
     .map(c => {
       const daysOld = Math.round(
@@ -29,7 +30,7 @@ function buildReviewQueueMessage(prs) {
     })
     .join('\n');
 
-  formattedPRs += `\n *${prs.length} PR(s) needing API review!*`;
+  formattedPRs += `\n *Found ${prs.length} open PRs with label \`${prefix}/requested 🗳\`*`;
 
   return formattedPRs;
 }

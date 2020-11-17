@@ -369,7 +369,9 @@ app.post('/review-queue', async (req, res) => {
   try {
     const prs = await fetchReviewQueuePRs(prefix);
 
-    console.log(`Found ${prs.length} open PRs with label '${search.label}'`);
+    console.log(
+      `Found ${prs.length} open PRs with label \`${prefix}/requested 🗳\``,
+    );
 
     let message;
     if (!prs || prs.length === 0) {
@@ -378,7 +380,7 @@ app.post('/review-queue', async (req, res) => {
       message = `${prs.length} PR${
         prs.length === 1 ? '' : 's'
       } awaiting ${prefix} (from <@${initiator.id}>):\n`;
-      message += buildReviewQueueMessage(prs);
+      message += buildReviewQueueMessage(prefix, prs);
     }
 
     postToSlack(

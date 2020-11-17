@@ -37,9 +37,12 @@ Toolkit.run(
     if (ACTION_TYPE === Actions.REVIEW_QUEUE) {
       tools.log.info(`Auditing ${ACTION_TYPE} PRs`);
 
+      const prefix = 'api-review';
       const prs = await fetchReviewQueuePRs(prefix);
 
-      tools.log.info(`Found ${prs.length} open PRs needing API review'`);
+      tools.log.info(
+        `Found ${prs.length} open PRs with label \`${prefix}/requested 🗳\`'`,
+      );
 
       let text;
       if (!prs || prs.length === 0) {
@@ -48,7 +51,7 @@ Toolkit.run(
         text += `${prs.length} PR${
           prs.length === 1 ? '' : 's'
         } awaiting ${prefix} (from automatic audit):\n`;
-        text += buildReviewQueueMessage(prs);
+        text += buildReviewQueueMessage(prefix, prs);
       }
 
       const result = await slackWebClient.chat.postMessage({
