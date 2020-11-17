@@ -14,9 +14,7 @@ const {
   buildNeedsManualPRsMessage,
   fetchNeedsManualPRs,
 } = require('./utils/needs-manual-prs');
-const {
-  searchIssues,
-} = require('./utils/issue-search');
+const { searchIssues } = require('./utils/issue-search');
 const { postToSlack, getSupportedBranches } = require('./utils/helpers');
 const { RELEASE_BRANCH_PATTERN, SLACK_BOT_TOKEN } = require('./constants');
 
@@ -363,17 +361,15 @@ app.post('/review-queue', async (req, res) => {
     name: profile.display_name_normalized,
   };
 
-  console.log(
-    `${initiator.name} initiated review-queue for prefix: ${prefix}`,
-  );
+  console.log(`${initiator.name} initiated review-queue for prefix: ${prefix}`);
 
   try {
     const search = {
       repo: `${ORGANIZATION_NAME}/${REPO_NAME}`,
       type: 'pr',
       state: 'open',
-      label: `"${prefix}/requested 🗳"`
-    }
+      label: `"${prefix}/requested 🗳"`,
+    };
     const prs = await searchIssues(search);
     console.log(`Found ${prs.length} open PRs with label '${search.label}'`);
 
@@ -381,9 +377,14 @@ app.post('/review-queue', async (req, res) => {
     if (!prs || prs.length === 0) {
       message = `*No PRs with prefix '${prefix}' needing review*`;
     } else {
-      message = `${prs.length} PR${prs.length === 1 ? '' : 's'} awaiting ${prefix} (from <@${initiator.id}>):\n`;
+      message = `${prs.length} PR${
+        prs.length === 1 ? '' : 's'
+      } awaiting ${prefix} (from <@${initiator.id}>):\n`;
       message += prs
-        .map(c => `- <${c.html_url}|#${c.number}> - ${c.title.split(/[\r\n]/, 1)[0]}`)
+        .map(
+          c =>
+            `- <${c.html_url}|#${c.number}> - ${c.title.split(/[\r\n]/, 1)[0]}`,
+        )
         .join('\n');
     }
 

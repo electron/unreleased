@@ -53,4 +53,4 @@ async function* getAllGenerator(urlEndpoint) {
 module.exports = {
   getAll,
   getAllGenerator,
-}
+};

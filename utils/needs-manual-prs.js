@@ -8,12 +8,11 @@ async function fetchNeedsManualPRs(branch, prAuthor) {
     repo: `${ORGANIZATION_NAME}/${REPO_NAME}`,
     type: 'pr',
     state: 'closed',
-    label: `"needs-manual-bp/${branch}"`
-  }
-  if (prAuthor)
-    search.author = prAuthor
+    label: `"needs-manual-bp/${branch}"`,
+  };
+  if (prAuthor) search.author = prAuthor;
 
-  return await searchIssues(search)
+  return await searchIssues(search);
 }
 
 // Build the text blob that will be posted to Slack.
