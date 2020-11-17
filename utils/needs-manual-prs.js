@@ -1,4 +1,3 @@
-const fetch = require('node-fetch');
 const { ORGANIZATION_NAME, REPO_NAME } = require('../constants');
 const { searchIssues } = require('./issue-search');
 
