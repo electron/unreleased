@@ -14,14 +14,12 @@ const {
   buildNeedsManualPRsMessage,
   fetchNeedsManualPRs,
 } = require('./utils/needs-manual-prs');
-const { searchIssues } = require('./utils/issue-search');
-const { postToSlack, getSupportedBranches } = require('./utils/helpers');
 const {
-  RELEASE_BRANCH_PATTERN,
-  SLACK_BOT_TOKEN,
-  ORGANIZATION_NAME,
-  REPO_NAME,
-} = require('./constants');
+  buildReviewQueueMessage,
+  fetchReviewQueuePRs,
+} = require('./utils/review-queue-prs');
+const { postToSlack, getSupportedBranches } = require('./utils/helpers');
+const { RELEASE_BRANCH_PATTERN, SLACK_BOT_TOKEN } = require('./constants');
 
 const slackWebClient = new WebClient(SLACK_BOT_TOKEN);
 
@@ -369,14 +367,11 @@ app.post('/review-queue', async (req, res) => {
   console.log(`${initiator.name} initiated review-queue for prefix: ${prefix}`);
 
   try {
-    const search = {
-      repo: `${ORGANIZATION_NAME}/${REPO_NAME}`,
-      type: 'pr',
-      state: 'open',
-      label: `"${prefix}/requested 🗳"`,
-    };
-    const prs = await searchIssues(search);
-    console.log(`Found ${prs.length} open PRs with label '${search.label}'`);
+    const prs = await fetchReviewQueuePRs(prefix);
+
+    console.log(
+      `Found ${prs.length} open PRs with label \`${prefix}/requested 🗳\``,
+    );
 
     let message;
     if (!prs || prs.length === 0) {
@@ -385,19 +380,7 @@ app.post('/review-queue', async (req, res) => {
       message = `${prs.length} PR${
         prs.length === 1 ? '' : 's'
       } awaiting ${prefix} (from <@${initiator.id}>):\n`;
-      message += prs
-        .map(c => {
-          const daysOld = Math.round(
-            (+new Date() - +new Date(c.created_at)) / (1000 * 60 * 60 * 24),
-          );
-          const parts = [
-            `[#${c.number}] <${c.html_url}|${c.title.split(/[\r\n]/, 1)[0]}>`,
-            `_${c.user.login}_`,
-            `_${daysOld} day${daysOld === 1 ? '' : 's'} old_`,
-          ];
-          return `- ${parts.join(' · ')}`;
-        })
-        .join('\n');
+      message += buildReviewQueueMessage(prefix, prs);
     }
 
     postToSlack(

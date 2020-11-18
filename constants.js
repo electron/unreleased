@@ -7,7 +7,7 @@ const NUM_SUPPORTED_VERSIONS = process.env.NUM_SUPPORTED_VERSIONS || 4;
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
-const ACTION_TYPE = process.env.ACTION_TYPE || 'unreleased';
+const ACTION_TYPE = process.env.ACTION_TYPE;
 
 const BLOCKS_RELEASE_LABEL =
   process.env.BLOCKS_RELEASE_LABEL || 'blocks-release';
