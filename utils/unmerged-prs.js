@@ -4,7 +4,7 @@ const { getReleaseBlockers } = require('./commits-helpers');
 const { ORGANIZATION_NAME, REPO_NAME, GH_API_PREFIX } = require('../constants');
 
 const formatMessage = pr => {
-  return `- ${pr.title.split(/[\r\n]/, 1)[0]} (<${pr.html_url}|#${pr.number}>)`;
+  return `* <${pr.html_url}|#${pr.number}> - ${pr.title.split(/[\r\n]/, 1)[0]}`;
 };
 
 // Fetch all PRs targeting a specified release line branch that have NOT been merged.

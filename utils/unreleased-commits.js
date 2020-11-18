@@ -39,7 +39,7 @@ function buildUnreleasedCommitsMessage(branch, commits, initiator) {
   const formattedCommits = commits
     .map(c => {
       const prLink = linkifyPRs(c.commit.message.split(/[\r\n]/, 1)[0]);
-      return `- \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${prLink}`;
+      return `* \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${prLink}`;
     })
     .join('\n');
 

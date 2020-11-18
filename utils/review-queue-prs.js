@@ -22,11 +22,11 @@ function buildReviewQueueMessage(prefix, prs) {
         (+new Date() - +new Date(c.created_at)) / (1000 * 60 * 60 * 24),
       );
       const parts = [
-        `[#${c.number}] <${c.html_url}|${c.title.split(/[\r\n]/, 1)[0]}>`,
+        `<${c.html_url}|#${c.number}> - ${c.title.split(/[\r\n]/, 1)[0]}`,
         `_${c.user.login}_`,
         `_${daysOld} day${daysOld === 1 ? '' : 's'} old_`,
       ];
-      return `- ${parts.join(' · ')}`;
+      return `* ${parts.join(' · ')}`;
     })
     .join('\n');
 
