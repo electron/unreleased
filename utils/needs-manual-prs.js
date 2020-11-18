@@ -9,7 +9,10 @@ async function fetchNeedsManualPRs(branch, prAuthor) {
     state: 'closed',
     label: `"needs-manual-bp/${branch}"`,
   };
-  if (prAuthor) search.author = prAuthor;
+
+  if (prAuthor) {
+    search.author = prAuthor;
+  }
 
   return await searchIssues(search);
 }
