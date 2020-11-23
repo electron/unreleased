@@ -11,7 +11,7 @@ describe('review-queue', () => {
       return Math.round(
         (+new Date() - +new Date(pr.created_at)) / (1000 * 60 * 60 * 24),
       );
-    })
+    });
 
     const expected = `* <https://github.com/electron/electron/pull/25198|#25198> - feat: implement allowFileAccess loadExtension option · _ChALkeR_ · _${days[0]} days old_
 * <https://github.com/electron/electron/pull/24849|#24849> - feat: add session.setCorsOriginAccessList API · _lishid_ · _${days[1]} days old_
