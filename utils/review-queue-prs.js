@@ -5,7 +5,6 @@ const { searchIssues } = require('./issue-search');
 async function fetchReviewQueuePRs(prefix) {
   const search = {
     repo: `${ORGANIZATION_NAME}/${REPO_NAME}`,
-    type: 'pr',
     state: 'open',
     label: `"${prefix}/requested 🗳"`,
   };
