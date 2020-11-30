@@ -17,5 +17,5 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        ACTION_TYPE: 'api-review'
+        ACTION_TYPE: 'review-queue'
         AUDIT_POST_CHANNEL: 'wg-api'
