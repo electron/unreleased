@@ -32,7 +32,9 @@ app.use(express.static('public'));
 // Check for pull requests targeting a specified release branch
 // that have not yet been merged.
 app.post('/unmerged', async (req, res) => {
+  const branches = await getSupportedBranches();
   const branch = req.body.text;
+
   const { profile } = await slackWebClient.users.profile.get({
     user: req.body.user_id,
   });
@@ -45,7 +47,9 @@ app.post('/unmerged', async (req, res) => {
     `${initiator.name} initiated unmerged audit for branch: ${branch}`,
   );
 
-  if (!RELEASE_BRANCH_PATTERN.test(branch)) {
+  const isInvalidBranch =
+    !RELEASE_BRANCH_PATTERN.test(branch) || !branches.includes(branch);
+  if (branch !== 'all' && isInvalidBranch) {
     console.error(`${branch} is not a valid branch`);
     postToSlack(
       {
@@ -60,21 +64,27 @@ app.post('/unmerged', async (req, res) => {
   console.log(`Auditing unmerged PRs on branch: ${branch}`);
 
   try {
-    const prs = await fetchUnmergedPRs(branch);
-    console.log(`Found ${prs.length} unmerged PR(s) targeting ${branch}`);
+    const branchesToCheck = branch === 'all' ? branches : [branch];
 
-    let message;
-    if (!prs || prs.length === 0) {
-      message = `*No PR(s) pending merge to ${branch}*`;
-    } else {
-      message = `Unmerged pull requests targeting *${branch}* (from <@${initiator.id}>):\n`;
-      message += buildUnmergedPRsMessage(branch, prs);
+    let messages = [];
+    for (const branch of branchesToCheck) {
+      const prs = await fetchUnmergedPRs(branch);
+      console.log(`Found ${prs.length} unmerged PR(s) targeting ${branch}`);
+
+      let message;
+      if (!prs || prs.length === 0) {
+        message = `*No PR(s) pending merge to ${branch}*`;
+      } else {
+        message = `Unmerged pull requests targeting *${branch}* (from <@${initiator.id}>):\n`;
+        message += buildUnmergedPRsMessage(branch, prs);
+      }
+      messages.push(message);
     }
 
     postToSlack(
       {
         response_type: 'in_channel',
-        text: message,
+        text: messages.join('\n'),
       },
       req.body.response_url,
     );
