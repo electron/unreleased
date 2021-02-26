@@ -1,6 +1,5 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { WebClient } = require('@slack/web-api');
 
 const {
   buildUnreleasedCommitsMessage,
@@ -18,10 +17,12 @@ const {
   buildReviewQueueMessage,
   fetchReviewQueuePRs,
 } = require('./utils/review-queue-prs');
-const { postToSlack, getSupportedBranches } = require('./utils/helpers');
-const { RELEASE_BRANCH_PATTERN, SLACK_BOT_TOKEN } = require('./constants');
-
-const slackWebClient = new WebClient(SLACK_BOT_TOKEN);
+const {
+  fetchInitiator,
+  getSupportedBranches,
+  postToSlack,
+} = require('./utils/helpers');
+const { RELEASE_BRANCH_PATTERN } = require('./constants');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -35,14 +36,7 @@ app.post('/unmerged', async (req, res) => {
   const branches = await getSupportedBranches();
   const branch = req.body.text;
 
-  const { profile } = await slackWebClient.users.profile.get({
-    user: req.body.user_id,
-  });
-  const initiator = {
-    id: req.body.user_id,
-    name: profile.display_name_normalized,
-  };
-
+  const initiator = await fetchInitiator(req);
   console.log(
     `${initiator.name} initiated unmerged audit for branch: ${branch}`,
   );
@@ -118,15 +112,7 @@ app.post('/needs-manual', async (req, res) => {
     shouldRemind = true;
   }
 
-  const { profile } = await slackWebClient.users.profile.get({
-    user: req.body.user_id,
-  });
-
-  const initiator = {
-    id: req.body.user_id,
-    name: profile.display_name_normalized,
-  };
-
+  const initiator = await fetchInitiator(req);
   console.log(
     `${initiator.name} initiated needs-manual audit for branch: ${branch}`,
   );
@@ -198,13 +184,7 @@ app.post('/unreleased', async (req, res) => {
   const branches = await getSupportedBranches();
 
   const auditTarget = req.body.text;
-  const { profile } = await slackWebClient.users.profile.get({
-    user: req.body.user_id,
-  });
-  const initiator = {
-    id: req.body.user_id,
-    name: profile.display_name_normalized,
-  };
+  const initiator = await fetchInitiator(req);
 
   // Allow for manual batch audit of all supported release branches.
   if (auditTarget === 'all') {
@@ -289,14 +269,8 @@ app.post('/audit-pre-release', async (req, res) => {
   const branches = await getSupportedBranches();
 
   const branch = req.body.text;
-  const { profile } = await slackWebClient.users.profile.get({
-    user: req.body.user_id,
-  });
-  const initiator = {
-    id: req.body.user_id,
-    name: profile.display_name_normalized,
-  };
 
+  const initiator = await fetchInitiator(req);
   console.log(
     `${initiator.name} initiated pre-release audit for branch: ${branch}`,
   );
@@ -365,15 +339,7 @@ app.post('/audit-pre-release', async (req, res) => {
 app.post('/review-queue', async (req, res) => {
   const [prefix] = req.body.text.split(' ');
 
-  const { profile } = await slackWebClient.users.profile.get({
-    user: req.body.user_id,
-  });
-
-  const initiator = {
-    id: req.body.user_id,
-    name: profile.display_name_normalized,
-  };
-
+  const initiator = await fetchInitiator(req);
   console.log(`${initiator.name} initiated review-queue for prefix: ${prefix}`);
 
   try {

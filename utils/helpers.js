@@ -1,6 +1,7 @@
 const fetch = require('node-fetch');
 const https = require('https');
 const url = require('url');
+const { WebClient } = require('@slack/web-api');
 
 const {
   ORGANIZATION_NAME,
@@ -8,7 +9,10 @@ const {
   GH_API_PREFIX,
   NUM_SUPPORTED_VERSIONS,
   RELEASE_BRANCH_PATTERN,
+  SLACK_BOT_TOKEN,
 } = require('../constants');
+
+const slackWebClient = new WebClient(SLACK_BOT_TOKEN);
 
 // Add a live PR link to a given commit.
 function linkifyPRs(msg) {
@@ -17,6 +21,17 @@ function linkifyPRs(msg) {
     (_, pr_id) =>
       `<https://github.com/${ORGANIZATION_NAME}/${REPO_NAME}/pull/${pr_id}|#${pr_id}>`,
   );
+}
+
+async function fetchInitiator(req) {
+  const { profile } = await slackWebClient.users.profile.get({
+    user: req.body.user_id,
+  });
+
+  return {
+    id: req.body.user_id,
+    name: profile.display_name_normalized,
+  };
 }
 
 // Determine whether a given release is in draft state or not.
@@ -69,8 +84,9 @@ const postToSlack = (data, postUrl) => {
 };
 
 module.exports = {
-  releaseIsDraft,
+  fetchInitiator,
   getSupportedBranches,
   linkifyPRs,
   postToSlack,
+  releaseIsDraft,
 };
