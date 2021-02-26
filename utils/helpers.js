@@ -14,6 +14,41 @@ const {
 
 const slackWebClient = new WebClient(SLACK_BOT_TOKEN);
 
+const SEMVER_TYPE = {
+  MAJOR: 'semver/major',
+  MINOR: 'semver/minor',
+  PATCH: 'semver/patch',
+};
+
+// Filter through commits in a given range and determine the overall semver type.
+async function getSemverForCommitRange(commits) {
+  for (const commit of commits) {
+    const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/commits/${commit.sha}/pulls`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/vnd.github.groot-preview+json',
+      },
+    });
+
+    const prs = await response.json();
+
+    if (prs.length > 0) {
+      console.info(`More than one PR associated with commit ${commit.sha}`);
+    } else {
+      const pr = prs[0];
+      const labels = pr.labels.map(label => label.name);
+      if (labels.some(label => label === SEMVER_TYPE.MAJOR)) {
+        return SEMVER_TYPE.MAJOR;
+      } else if (labels.some(label => label === SEMVER_TYPE.MINOR)) {
+        return SEMVER_TYPE.MINOR;
+      }
+    }
+  }
+
+  return SEMVER_TYPE.PATCH;
+}
+
 // Add a live PR link to a given commit.
 function linkifyPRs(msg) {
   return msg.replace(
@@ -85,6 +120,7 @@ const postToSlack = (data, postUrl) => {
 
 module.exports = {
   fetchInitiator,
+  getSemverForCommitRange,
   getSupportedBranches,
   linkifyPRs,
   postToSlack,

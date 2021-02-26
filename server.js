@@ -19,6 +19,7 @@ const {
 } = require('./utils/review-queue-prs');
 const {
   fetchInitiator,
+  getSemverForCommitRange,
   getSupportedBranches,
   postToSlack,
 } = require('./utils/helpers');
@@ -29,6 +30,52 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use(express.static('public'));
+
+app.post('/verify-semver', async (req, res) => {
+  const branches = await getSupportedBranches();
+  const branch = req.body.text;
+
+  const initiator = await fetchInitiator(req);
+  console.log(
+    `${initiator.name} initiated release semver verification for branch: ${branch}`,
+  );
+
+  const isInvalidBranch =
+    !RELEASE_BRANCH_PATTERN.test(branch) || !branches.includes(branch);
+  if (isInvalidBranch) {
+    console.error(`${branch} is not a valid branch`);
+    postToSlack(
+      {
+        response_type: 'ephemeral',
+        text: 'Branch name not valid. Try again?',
+      },
+      req.body.response_url,
+    );
+    return res.status(200).end();
+  }
+
+  try {
+    const commits = await fetchUnreleasedCommits(branch);
+    const semverType = await getSemverForCommitRange(commits);
+
+    postToSlack(
+      {
+        response_type: 'in_channel',
+        text: `Next release type for ${branch} is: *${semverType}*`,
+      },
+      req.body.response_url,
+    );
+  } catch (err) {
+    console.error(err);
+    postToSlack(
+      {
+        response_type: 'ephemeral',
+        text: `Error: ${err}`,
+      },
+      req.body.response_url,
+    );
+  }
+});
 
 // Check for pull requests targeting a specified release branch
 // that have not yet been merged.
