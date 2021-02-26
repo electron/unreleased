@@ -62,13 +62,33 @@ An audit of pull requests needing manual backport to a particular release line c
 /check-needs-manual <branch_name> <author> <remind>
 ```
 
-where `branch-name` matches the name of a release line branch of the repository.
+where `branch_name` matches the name of a release line branch of the repository.
 
 Example:
 
 ```sh
 /check-needs-manual 8-x-y
 ```
+
+### Verify Upcoming Release Type
+
+An verification of the semver type of the next release for a given branch can be triggered via Slack using the following:
+
+```sh
+/verify-semver <branch_name>
+```
+
+where `branch_name` matches the name of a release line branch of the repository.
+
+Example:
+
+```sh
+/verify-semver <branch_name>
+```
+
+Example output:
+
+> Next release type for `12-x-y` is: **semver/patch**
 
 #### Scoping By Author 
 
@@ -117,7 +137,7 @@ A pre-release audit combines the needs-manual audit with the unmerged audit to r
 /audit-pre-release <branch_name>
 ```
 
-where `branch-name` matches the name of a release line branch of the repository.
+where `branch_name` matches the name of a release line branch of the repository.
 
 Example:
 

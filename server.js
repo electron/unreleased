@@ -61,7 +61,7 @@ app.post('/verify-semver', async (req, res) => {
     postToSlack(
       {
         response_type: 'in_channel',
-        text: `Next release type for ${branch} is: *${semverType}*`,
+        text: `Next release type for \`${branch}\` is: *${semverType}*`,
       },
       req.body.response_url,
     );
