@@ -33,7 +33,7 @@ async function getSemverForCommitRange(commits) {
 
     const prs = await response.json();
 
-    if (prs.length > 0) {
+    if (prs.length > 1) {
       console.info(`More than one PR associated with commit ${commit.sha}`);
     } else {
       const pr = prs[0];
