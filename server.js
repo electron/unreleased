@@ -56,7 +56,10 @@ app.post('/verify-semver', async (req, res) => {
 
   try {
     const commits = await fetchUnreleasedCommits(branch);
+    console.info(`Found ${commits.length} commits unreleased on ${branch}`);
+
     const semverType = await getSemverForCommitRange(commits);
+    console.info(`Determined that next release on ${branch} is ${semverType}`);
 
     postToSlack(
       {
