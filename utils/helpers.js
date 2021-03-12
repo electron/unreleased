@@ -31,10 +31,11 @@ async function getSemverForCommitRange(commits) {
       },
     });
 
-    const prs = await response.json();
+    const data = await response.json();
+    const prs = data.filter(pr => pr.merge_commit_sha === commit.sha);
 
     if (prs.length > 1) {
-      console.info(`More than one PR associated with commit ${commit.sha}`);
+      throw new Error(`More than one PR associated with commit ${commit.sha}`);
     } else {
       const pr = prs[0];
       const labels = pr.labels.map(label => label.name);
