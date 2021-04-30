@@ -14,7 +14,7 @@ async function fetchUnreleasedCommits(branch) {
     `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/tags`,
   );
   const unreleased = [];
-  const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/commits?sha=${branch}`;
+  const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/commits?sha=${branch}&per_page=100`;
 
   for await (const commit of getAllGenerator(url)) {
     const tag = tags.find(t => t.commit.sha === commit.sha);

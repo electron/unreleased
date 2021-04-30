@@ -1,5 +1,6 @@
 const fetch = require('node-fetch');
 const https = require('https');
+const queue = require('queue').default;
 const url = require('url');
 const { WebClient } = require('@slack/web-api');
 
@@ -22,32 +23,51 @@ const SEMVER_TYPE = {
 
 // Filter through commits in a given range and determine the overall semver type.
 async function getSemverForCommitRange(commits) {
+  const commitQueue = queue({
+    concurrency: 5,
+  });
+
+  let resultantSemver = SEMVER_TYPE.PATCH;
   for (const commit of commits) {
-    const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/commits/${commit.sha}/pulls`;
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/vnd.github.groot-preview+json',
-      },
-    });
+    commitQueue.push(async () => {
+      const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/commits/${commit.sha}/pulls`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/vnd.github.groot-preview+json',
+        },
+      });
 
-    const data = await response.json();
-    const prs = data.filter(pr => pr.merge_commit_sha === commit.sha);
+      const data = await response.json();
+      const prs = data.filter(pr => pr.merge_commit_sha === commit.sha);
 
-    if (prs.length > 1) {
-      throw new Error(`More than one PR associated with commit ${commit.sha}`);
-    } else {
-      const pr = prs[0];
-      const labels = pr.labels.map(label => label.name);
-      if (labels.some(label => label === SEMVER_TYPE.MAJOR)) {
-        return SEMVER_TYPE.MAJOR;
-      } else if (labels.some(label => label === SEMVER_TYPE.MINOR)) {
-        return SEMVER_TYPE.MINOR;
+      if (prs.length > 1) {
+        throw new Error(
+          `More than one PR associated with commit ${commit.sha}`,
+        );
+      } else {
+        const pr = prs[0];
+        const labels = pr.labels.map(label => label.name);
+        if (labels.some(label => label === SEMVER_TYPE.MAJOR)) {
+          resultantSemver = SEMVER_TYPE.MAJOR;
+        } else if (
+          labels.some(label => label === SEMVER_TYPE.MINOR) &&
+          resultantSemver !== SEMVER_TYPE.MAJOR
+        ) {
+          resultantSemver = SEMVER_TYPE.MINOR;
+        }
       }
-    }
+    });
   }
 
-  return SEMVER_TYPE.PATCH;
+  await new Promise((resolve, reject) => {
+    commitQueue.start(err => {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
+
+  return resultantSemver;
 }
 
 // Add a live PR link to a given commit.
