@@ -22,7 +22,7 @@ async function getAllTagsWithCache() {
   return tagsCache;
 }
 
-getAllTagsWithCache().catch((err) => {
+getAllTagsWithCache().catch(err => {
   console.error('Failed to prepopulate tag cache', err);
 });
 

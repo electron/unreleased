@@ -31,6 +31,35 @@ app.use(bodyParser.json());
 
 app.use(express.static('public'));
 
+app.get('/verify-semver', async (req, res) => {
+  if (req.headers.authorization !== process.env.VERIFY_SEMVER_AUTH_HEADER)
+    return res.status(401).end();
+
+  const { branch } = req.query;
+
+  const branches = await getSupportedBranches();
+
+  const isInvalidBranch =
+    !RELEASE_BRANCH_PATTERN.test(branch) || !branches.includes(branch);
+  if (isInvalidBranch) {
+    res.status(400).json({ error: `${branch} is not a valid branch` });
+    return;
+  }
+
+  try {
+    const commits = await fetchUnreleasedCommits(branch);
+
+    const semverType = await getSemverForCommitRange(commits);
+
+    return res.json({ semverType });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      error: true,
+    });
+  }
+});
+
 app.post('/verify-semver', async (req, res) => {
   res.status(200).end();
 
