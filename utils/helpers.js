@@ -45,7 +45,7 @@ async function getSemverForCommitRange(commits) {
         throw new Error(
           `More than one PR associated with commit ${commit.sha}`,
         );
-      } else {
+      } else if (prs.length === 1) {
         const pr = prs[0];
         const labels = pr.labels.map(label => label.name);
         if (labels.some(label => label === SEMVER_TYPE.MAJOR)) {

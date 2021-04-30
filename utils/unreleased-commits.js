@@ -1,4 +1,4 @@
-const { getAll, getAllGenerator } = require('./api-helpers');
+const { getAllGenerator } = require('./api-helpers');
 const { linkifyPRs, releaseIsDraft } = require('./helpers');
 
 const {
@@ -8,11 +8,23 @@ const {
   BUMP_COMMIT_PATTERN,
 } = require('../constants');
 
+// Fetch every tag all the time is expensive, GitHub returns the most recent tags first
+// So we fetch all tags once, then the next time we only fetch new tags until we find one
+// we have seen before
+const tagsCache = [];
+async function getAllTagsWithCache() {
+  for await (const tag of getAllGenerator(
+    `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/tags?per_page=100`,
+  )) {
+    if (tagsCache.find(t => tag.node_id === t.node_id)) break;
+    tagsCache.push(tag);
+  }
+  return tagsCache;
+}
+
 // Fetch all unreleased commits for a specified release line branch.
 async function fetchUnreleasedCommits(branch) {
-  const tags = await getAll(
-    `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/tags`,
-  );
+  const tags = await getAllTagsWithCache();
   const unreleased = [];
   const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/commits?sha=${branch}&per_page=100`;
 
@@ -20,7 +32,9 @@ async function fetchUnreleasedCommits(branch) {
     const tag = tags.find(t => t.commit.sha === commit.sha);
     if (tag) {
       const isDraft = await releaseIsDraft(tag.name);
-      if (!isDraft) break;
+      if (!isDraft) {
+        break;
+      }
     }
 
     // Filter out bump commits.
