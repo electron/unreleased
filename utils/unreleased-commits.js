@@ -22,6 +22,10 @@ async function getAllTagsWithCache() {
   return tagsCache;
 }
 
+getAllTagsWithCache().catch((err) => {
+  console.error('Failed to prepopulate tag cache', err);
+});
+
 // Fetch all unreleased commits for a specified release line branch.
 async function fetchUnreleasedCommits(branch) {
   const tags = await getAllTagsWithCache();
