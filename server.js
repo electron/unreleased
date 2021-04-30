@@ -32,6 +32,8 @@ app.use(bodyParser.json());
 app.use(express.static('public'));
 
 app.post('/verify-semver', async (req, res) => {
+  res.status(200).end();
+
   const branches = await getSupportedBranches();
   const branch = req.body.text;
 
@@ -51,7 +53,7 @@ app.post('/verify-semver', async (req, res) => {
       },
       req.body.response_url,
     );
-    return res.status(200).end();
+    return;
   }
 
   try {
