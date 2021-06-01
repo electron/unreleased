@@ -1,7 +1,7 @@
 const { ORGANIZATION_NAME, REPO_NAME } = require('../constants');
 const { searchIssues } = require('./issue-search');
 
-// Fetch all PRs targeting 'master' that have a 'needs-manual/<branch>' label on them.
+// Fetch all PRs targeting 'main' that have a 'needs-manual/<branch>' label on them.
 async function fetchNeedsManualPRs(branch, prAuthor) {
   const search = {
     repo: `${ORGANIZATION_NAME}/${REPO_NAME}`,

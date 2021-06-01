@@ -177,7 +177,7 @@ app.post('/unmerged', async (req, res) => {
   return res.status(200).end();
 });
 
-// Check for pull requests which have been merged to master and labeled
+// Check for pull requests which have been merged to main and labeled
 // with target/BRANCH_NAME that trop failed for and which still need manual backports.
 app.post('/needs-manual', async (req, res) => {
   const branches = await getSupportedBranches();
