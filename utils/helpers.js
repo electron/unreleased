@@ -99,7 +99,7 @@ async function releaseIsDraft(tag) {
 
 // Get array of currently supported branches.
 async function getSupportedBranches() {
-  const branchEndpoint = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/branches`;
+  const branchEndpoint = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/branches?per_page=100`;
   const resp = await fetch(branchEndpoint);
 
   let branches = await resp.json();
