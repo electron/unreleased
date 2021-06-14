@@ -32,8 +32,8 @@ async function fetchUnreleasedCommits(branch) {
   const unreleased = [];
   const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/commits?sha=${branch}&per_page=100`;
 
-  for await (const commit of getAllGenerator(url)) {
-    const tag = tags.find(t => t.commit.sha === commit.sha);
+  for await (const payload of getAllGenerator(url)) {
+    const tag = tags.find(t => t.commit.sha === payload.sha);
     if (tag) {
       const isDraft = await releaseIsDraft(tag.name);
       if (!isDraft) {
@@ -42,9 +42,9 @@ async function fetchUnreleasedCommits(branch) {
     }
 
     // Filter out bump commits.
-    if (BUMP_COMMIT_PATTERN.test(commit.message)) continue;
+    if (BUMP_COMMIT_PATTERN.test(payload.commit.message)) continue;
 
-    unreleased.push(commit);
+    unreleased.push(payload);
   }
   return unreleased;
 }
