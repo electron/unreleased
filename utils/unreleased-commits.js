@@ -12,7 +12,9 @@ const {
 // So we fetch all tags once, then the next time we only fetch new tags until we find one
 // we have seen before
 const tagsCache = [];
+let initialCacheFill = null;
 async function getAllTagsWithCache() {
+  if (initialCacheFill) await initialCacheFill;
   for await (const tag of getAllGenerator(
     `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/tags?per_page=100`,
   )) {
@@ -22,7 +24,7 @@ async function getAllTagsWithCache() {
   return tagsCache;
 }
 
-getAllTagsWithCache().catch(err => {
+initialCacheFill = getAllTagsWithCache().catch(err => {
   console.error('Failed to prepopulate tag cache', err);
 });
 
