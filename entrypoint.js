@@ -48,7 +48,7 @@ Toolkit.run(
       if (!prs || prs.length === 0) {
         text = `*No open PRs with label \`${prefix}/requested 🗳\`*`;
       } else {
-        text += `${prs.length} PR${
+        text = `${prs.length} PR${
           prs.length === 1 ? '' : 's'
         } awaiting ${prefix} (from automatic audit):\n`;
         text += buildReviewQueueMessage(prefix, prs);
