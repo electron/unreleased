@@ -47,7 +47,7 @@ app.get('/verify-semver', async (req, res) => {
   }
 
   try {
-    const commits = await fetchUnreleasedCommits(branch);
+    const commits = await fetchUnreleasedCommits(branch, true);
 
     const semverType = await getSemverForCommitRange(commits);
 

@@ -13,13 +13,19 @@ const {
 // we have seen before
 const tagsCache = [];
 let initialCacheFill = null;
-async function getAllTagsWithCache() {
+async function getAllTagsWithCache(force = false) {
   if (initialCacheFill) await initialCacheFill;
   for await (const tag of getAllGenerator(
     `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/tags?per_page=100`,
   )) {
-    if (tagsCache.find(t => tag.node_id === t.node_id)) break;
-    tagsCache.push(tag);
+    if (tagsCache.find(t => tag.node_id === t.node_id)) {
+      // If it is a tag we have seen before and we aren't forcefully fetching all tags
+      // we can skip the loop here.
+      if (!force) break;
+    } else {
+      // If we have not seen it before, insert it into the cache.
+      tagsCache.push(tag);
+    }
   }
   return tagsCache;
 }
@@ -29,8 +35,8 @@ initialCacheFill = getAllTagsWithCache().catch(err => {
 });
 
 // Fetch all unreleased commits for a specified release line branch.
-async function fetchUnreleasedCommits(branch) {
-  const tags = await getAllTagsWithCache();
+async function fetchUnreleasedCommits(branch, force = false) {
+  const tags = await getAllTagsWithCache(force);
   const unreleased = [];
   const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/commits?sha=${branch}&per_page=100`;
 
