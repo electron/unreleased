@@ -13,7 +13,7 @@ async function* getAllGenerator(urlEndpoint) {
   let next = urlEndpoint;
   while (next) {
     const resp = await fetch(next, {
-      headers: { Authorization: `token ${GITHUB_TOKEN}` },
+      headers: { Authorization: `${GITHUB_TOKEN}` },
     });
 
     if (!resp.ok) {
