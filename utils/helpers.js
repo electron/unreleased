@@ -101,6 +101,11 @@ async function releaseIsDraft(tag) {
 async function getSupportedBranches() {
   const branchEndpoint = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/branches?per_page=100`;
   const resp = await fetch(branchEndpoint);
+  if (!resp.ok) {
+    throw new Error(
+      `Error in unreleased when fetching branches: ${resp.statusText}`,
+    );
+  }
 
   let branches = await resp.json();
   const releaseBranches = branches.filter(branch => {
