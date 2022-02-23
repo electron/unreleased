@@ -30,6 +30,7 @@ async function getSemverForCommitRange(commits) {
   let resultantSemver = SEMVER_TYPE.PATCH;
   for (const commit of commits) {
     commitQueue.push(async () => {
+      console.log('commit.sha: ', commit.sha);
       const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/commits/${commit.sha}/pulls`;
       const response = await fetch(url, {
         method: 'GET',
@@ -37,6 +38,11 @@ async function getSemverForCommitRange(commits) {
           Accept: 'application/vnd.github.groot-preview+json',
         },
       });
+      if (!response.ok) {
+        throw new Error(
+          `Error in unreleased when fetching branches: ${response.statusText}`,
+        );
+      }
 
       const data = await response.json();
       const prs = data.filter(pr => pr.merge_commit_sha === commit.sha);
