@@ -108,17 +108,8 @@ async function getSupportedBranches() {
     }),
   );
 
-  const {
-    data: { default_branch: mainBranchName },
-  } = await octokit.repos.get({
-    owner: ORGANIZATION_NAME,
-    repo: REPO_NAME,
-  });
-
   const releaseBranches = branches.filter(branch => {
-    const isRelease = branch.name.match(RELEASE_BRANCH_PATTERN);
-    const isMain = branch.name === mainBranchName;
-    return isRelease || isMain;
+    return branch.name.match(RELEASE_BRANCH_PATTERN);
   });
 
   const filtered = {};
