@@ -1,7 +1,7 @@
-const { getAll } = require('./api-helpers');
 const { getReleaseBlockers } = require('./commits-helpers');
+const { octokit } = require('./helpers');
 
-const { ORGANIZATION_NAME, REPO_NAME, GH_API_PREFIX } = require('../constants');
+const { ORGANIZATION_NAME, REPO_NAME } = require('../constants');
 
 const formatMessage = pr => {
   return `* <${pr.html_url}|#${pr.number}> - ${pr.title.split(/[\r\n]/, 1)[0]}`;
@@ -9,8 +9,11 @@ const formatMessage = pr => {
 
 // Fetch all PRs targeting a specified release line branch that have NOT been merged.
 async function fetchUnmergedPRs(branch) {
-  const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/pulls?base=${branch}`;
-  return getAll(url);
+  return await octokit.paginate(octokit.pulls.list, {
+    owner: ORGANIZATION_NAME,
+    repo: REPO_NAME,
+    base: branch,
+  });
 }
 
 // Build the text blob that will be posted to Slack.

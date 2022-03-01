@@ -1,13 +1,6 @@
 const fetch = require('node-fetch');
 const { GITHUB_TOKEN } = require('../constants');
 
-// Formulate a list of all objects based on a certain url endpoint.
-async function getAll(urlEndpoint) {
-  const objects = [];
-  for await (const obj of getAllGenerator(urlEndpoint)) objects.push(obj);
-  return objects;
-}
-
 // Fetch all pages from the given URL.
 async function* getAllGenerator(urlEndpoint) {
   let next = urlEndpoint;
@@ -51,6 +44,5 @@ async function* getAllGenerator(urlEndpoint) {
 }
 
 module.exports = {
-  getAll,
   getAllGenerator,
 };
