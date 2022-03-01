@@ -1,19 +1,20 @@
-const fetch = require('node-fetch');
-const https = require('https');
 const queue = require('queue').default;
 const url = require('url');
 const { WebClient } = require('@slack/web-api');
+const { Octokit } = require('@octokit/rest');
 
 const {
   ORGANIZATION_NAME,
   REPO_NAME,
-  GH_API_PREFIX,
   NUM_SUPPORTED_VERSIONS,
   RELEASE_BRANCH_PATTERN,
   SLACK_BOT_TOKEN,
 } = require('../constants');
 
 const slackWebClient = new WebClient(SLACK_BOT_TOKEN);
+const octokit = new Octokit({
+  auth: process.env.UNRELEASED_GITHUB_TOKEN,
+});
 
 const SEMVER_TYPE = {
   MAJOR: 'semver/major',
@@ -30,28 +31,15 @@ async function getSemverForCommitRange(commits) {
   let resultantSemver = SEMVER_TYPE.PATCH;
   for (const commit of commits) {
     commitQueue.push(async () => {
-      console.log('commit.sha: ', commit.sha);
-      const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/commits/${commit.sha}/pulls`;
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/vnd.github.groot-preview+json',
-        },
+      const { data } = await octokit.pulls.list({
+        owner: ORGANIZATION_NAME,
+        repo: REPO_NAME,
+        state: 'closed'
       });
-      if (!response.ok) {
-        throw new Error(
-          `Error in unreleased when fetching branches: ${response.statusText}`,
-        );
-      }
 
-      const data = await response.json();
       const prs = data.filter(pr => pr.merge_commit_sha === commit.sha);
 
-      if (prs.length > 1) {
-        throw new Error(
-          `More than one PR associated with commit ${commit.sha}`,
-        );
-      } else if (prs.length === 1) {
+      if (prs.length === 1) {
         const pr = prs[0];
         const labels = pr.labels.map(label => label.name);
         if (labels.some(label => label === SEMVER_TYPE.MAJOR)) {
@@ -62,6 +50,10 @@ async function getSemverForCommitRange(commits) {
         ) {
           resultantSemver = SEMVER_TYPE.MINOR;
         }
+      } else {
+        throw new Error(
+          `Invalid number of PRs associated with ${commit.sha}`,
+        );
       }
     });
   }
@@ -98,31 +90,44 @@ async function fetchInitiator(req) {
 
 // Determine whether a given release is in draft state or not.
 async function releaseIsDraft(tag) {
-  const releaseEndpoint = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/releases/tags/${tag}`;
-  const res = await fetch(releaseEndpoint);
-  return res.status === 404;
+  const { draft } = await octokit.rest.repos.getReleaseByTag({
+    owner: ORGANIZATION_NAME,
+    repo: REPO_NAME,
+    tag
+  });
+
+  return draft;
 }
 
-// Get array of currently supported branches.
+// Fetch an array of the currently supported branches.
 async function getSupportedBranches() {
-  const branchEndpoint = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/branches?per_page=100`;
-  const resp = await fetch(branchEndpoint);
-  if (!resp.ok) {
-    throw new Error(
-      `Error in unreleased when fetching branches: ${resp.statusText}`,
-    );
-  }
+  const branches = await octokit.paginate(
+    octokit.repos.listBranches.endpoint.merge({
+      owner: ORGANIZATION_NAME,
+      repo: REPO_NAME,
+      protected: true,
+    }),
+  );
 
-  let branches = await resp.json();
-  const releaseBranches = branches.filter(branch => {
-    return branch.name.match(RELEASE_BRANCH_PATTERN);
+  const {
+    data: { default_branch: mainBranchName },
+  } = await octokit.repos.get({
+    owner: ORGANIZATION_NAME,
+    repo: REPO_NAME,
   });
+
+  const releaseBranches = branches.filter((branch) => {
+    const isRelease = branch.name.match(RELEASE_BRANCH_PATTERN);
+    const isMain = branch.name === mainBranchName;
+    return isRelease || isMain;
+  });
+
   const filtered = {};
   releaseBranches
     .sort((a, b) => {
       const aParts = a.name.split('-');
       const bParts = b.name.split('-');
-      for (let i = 0; i < aParts.length; i += 1) {
+      for (let i = 0; i < aParts.length; i++) {
         if (aParts[i] === bParts[i]) continue;
         return parseInt(aParts[i], 10) - parseInt(bParts[i], 10);
       }
@@ -133,9 +138,7 @@ async function getSupportedBranches() {
     });
 
   const values = Object.values(filtered);
-  return values
-    .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
-    .slice(-NUM_SUPPORTED_VERSIONS);
+  return values.sort((a, b) => parseInt(a, 10) - parseInt(b, 10)).slice(-NUM_SUPPORTED_VERSIONS);
 }
 
 // Post a message to a Slack workspace.
