@@ -150,11 +150,25 @@ const postToSlack = (data, postUrl) => {
   r.end(JSON.stringify(data));
 };
 
+let octokit;
+
+const getOctokit = () =>{
+  if (!octokit) {
+    octokit = new Octokit({
+      auth: process.env.UNRELEASED_GITHUB_TOKEN,
+    });
+  }
+
+  return octokit;
+}
+
 module.exports = {
   fetchInitiator,
+  getOctokit,
   getSemverForCommitRange,
   getSupportedBranches,
   linkifyPRs,
   postToSlack,
   releaseIsDraft,
 };
+
