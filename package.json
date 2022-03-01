@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "Checks for and reports commits unreleased for all currently supported branches.",
   "scripts": {
+    "eslint:format": "eslint --fix '**/*.js'",
     "eslint:lint": "eslint '**/*.js'",
     "lint": "npm run prettier:lint && npm run eslint:lint",
     "lint-staged": "lint-staged",
     "prepare": "husky install",
-    "prettier:lint": "prettier --check '**/*.js'",
     "prettier:format": "prettier --write '**/*.js'",
+    "prettier:lint": "prettier --check '**/*.js'",
     "start": "node server.js",
     "test": "./node_modules/.bin/mocha"
   },
@@ -43,6 +44,7 @@
   },
   "lint-staged": {
     "*.js": [
+      "eslint --fix",
       "prettier --write"
     ]
   }
