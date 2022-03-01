@@ -1,42 +1,55 @@
 const { getAllGenerator } = require('./api-helpers');
-const { linkifyPRs, releaseIsDraft } = require('./helpers');
+const { octokit, linkifyPRs, releaseIsDraft } = require('./helpers');
 
 const {
+  BUMP_COMMIT_PATTERN,
+  GH_API_PREFIX,
   ORGANIZATION_NAME,
   REPO_NAME,
-  GH_API_PREFIX,
-  BUMP_COMMIT_PATTERN,
 } = require('../constants');
 
 // Fetch every tag all the time is expensive, GitHub returns the most recent tags first
 // So we fetch all tags once, then the next time we only fetch new tags until we find one
 // we have seen before
 const tagsCache = [];
-let initialCacheFill = null;
-async function getAllTagsWithCache(force = false) {
-  if (initialCacheFill) await initialCacheFill;
-  for await (const tag of getAllGenerator(
-    `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/tags?per_page=100`,
-  )) {
-    if (tagsCache.find(t => tag.node_id === t.node_id)) {
-      // If it is a tag we have seen before and we aren't forcefully fetching all tags
-      // we can skip the loop here.
-      if (!force) break;
-    } else {
-      // If we have not seen it before, insert it into the cache.
-      tagsCache.push(tag);
-    }
-  }
-  return tagsCache;
+
+function isCached(tag) {
+  return !!tagsCache.find(t => t.node_id === tag.node_id);
 }
 
-initialCacheFill = getAllTagsWithCache().catch(err => {
-  console.error('Failed to prepopulate tag cache', err);
-});
+let initialCacheFill;
+
+async function fetchTags(force = false) {
+  if (initialCacheFill) await initialCacheFill;
+
+  return octokit
+    .paginate(
+      octokit.repos.listTags,
+      {
+        owner: ORGANIZATION_NAME,
+        repo: REPO_NAME,
+      },
+      ({ data }, done) => {
+        for (const tag of data) {
+          if (!force && isCached(tag)) done(); // stop octokit pagination
+          tagsCache.push(tag);
+        }
+      },
+    )
+    .then(() => {
+      return tagsCache;
+    })
+    .catch(err => {
+      console.error('Failed to prepopulate tag cache', err);
+    });
+}
+
+// populate the cache on startup
+initialCacheFill = fetchTags(true);
 
 // Fetch all unreleased commits for a specified release line branch.
 async function fetchUnreleasedCommits(branch, force = false) {
-  const tags = await getAllTagsWithCache(force);
+  const tags = await fetchTags(force);
   const unreleased = [];
   const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/commits?sha=${branch}&per_page=100`;
 

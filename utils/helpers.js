@@ -150,6 +150,7 @@ module.exports = {
   getSemverForCommitRange,
   getSupportedBranches,
   linkifyPRs,
+  octokit,
   postToSlack,
   releaseIsDraft,
 };
