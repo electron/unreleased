@@ -154,4 +154,3 @@ module.exports = {
   postToSlack,
   releaseIsDraft,
 };
-
