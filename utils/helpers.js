@@ -1,4 +1,5 @@
 const queue = require('queue').default;
+const https = require('https');
 const url = require('url');
 const { WebClient } = require('@slack/web-api');
 const { Octokit } = require('@octokit/rest');
@@ -34,7 +35,7 @@ async function getSemverForCommitRange(commits) {
       const { data } = await octokit.pulls.list({
         owner: ORGANIZATION_NAME,
         repo: REPO_NAME,
-        state: 'closed'
+        state: 'closed',
       });
 
       const prs = data.filter(pr => pr.merge_commit_sha === commit.sha);
@@ -51,9 +52,7 @@ async function getSemverForCommitRange(commits) {
           resultantSemver = SEMVER_TYPE.MINOR;
         }
       } else {
-        throw new Error(
-          `Invalid number of PRs associated with ${commit.sha}`,
-        );
+        throw new Error(`Invalid number of PRs associated with ${commit.sha}`);
       }
     });
   }
@@ -90,10 +89,10 @@ async function fetchInitiator(req) {
 
 // Determine whether a given release is in draft state or not.
 async function releaseIsDraft(tag) {
-  const { draft } = await octokit.rest.repos.getReleaseByTag({
+  const { draft } = await octokit.repos.getReleaseByTag({
     owner: ORGANIZATION_NAME,
     repo: REPO_NAME,
-    tag
+    tag,
   });
 
   return draft;
@@ -116,7 +115,7 @@ async function getSupportedBranches() {
     repo: REPO_NAME,
   });
 
-  const releaseBranches = branches.filter((branch) => {
+  const releaseBranches = branches.filter(branch => {
     const isRelease = branch.name.match(RELEASE_BRANCH_PATTERN);
     const isMain = branch.name === mainBranchName;
     return isRelease || isMain;
@@ -138,7 +137,9 @@ async function getSupportedBranches() {
     });
 
   const values = Object.values(filtered);
-  return values.sort((a, b) => parseInt(a, 10) - parseInt(b, 10)).slice(-NUM_SUPPORTED_VERSIONS);
+  return values
+    .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+    .slice(-NUM_SUPPORTED_VERSIONS);
 }
 
 // Post a message to a Slack workspace.
