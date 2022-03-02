@@ -10,7 +10,7 @@ const {
   NUM_SUPPORTED_VERSIONS,
   RELEASE_BRANCH_PATTERN,
   SLACK_BOT_TOKEN,
-  GITHUB_TOKEN
+  GITHUB_TOKEN,
 } = require('../constants');
 
 const slackWebClient = new WebClient(SLACK_BOT_TOKEN);
