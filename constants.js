@@ -1,5 +1,3 @@
-const GH_API_PREFIX = 'https://api.github.com';
-
 const ORGANIZATION_NAME = process.env.ORGANIZATION_NAME || 'electron';
 const REPO_NAME = process.env.REPO_NAME || 'electron';
 
@@ -23,7 +21,6 @@ module.exports = {
   AUDIT_POST_CHANNEL,
   BLOCKS_RELEASE_LABEL,
   BUMP_COMMIT_PATTERN,
-  GH_API_PREFIX,
   GITHUB_TOKEN,
   NUM_SUPPORTED_VERSIONS,
   ORGANIZATION_NAME,
