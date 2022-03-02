@@ -1,9 +1,7 @@
-const { getAllGenerator } = require('./api-helpers');
 const { octokit, linkifyPRs, releaseIsDraft } = require('./helpers');
 
 const {
   BUMP_COMMIT_PATTERN,
-  GH_API_PREFIX,
   ORGANIZATION_NAME,
   REPO_NAME,
 } = require('../constants');
@@ -51,22 +49,32 @@ initialCacheFill = fetchTags(true);
 async function fetchUnreleasedCommits(branch, force = false) {
   const tags = await fetchTags(force);
   const unreleased = [];
-  const url = `${GH_API_PREFIX}/repos/${ORGANIZATION_NAME}/${REPO_NAME}/commits?sha=${branch}&per_page=100`;
 
-  for await (const payload of getAllGenerator(url)) {
-    const tag = tags.find(t => t.commit.sha === payload.sha);
-    if (tag) {
-      const isDraft = await releaseIsDraft(tag.name);
-      if (!isDraft) {
-        break;
+  octokit.paginate(
+    octokit.repos.listCommits,
+    {
+      owner: ORGANIZATION_NAME,
+      repo: REPO_NAME,
+      sha: branch,
+    },
+    async ({ data }, done) => {
+      for (const payload of data) {
+        const tag = tags.find(t => t.commit.sha === payload.sha);
+        if (tag) {
+          const isDraft = await releaseIsDraft(tag.name);
+          if (!isDraft) {
+            done();
+          }
+        }
+
+        // Filter out bump commits.
+        if (BUMP_COMMIT_PATTERN.test(payload.commit.message)) continue;
+
+        unreleased.push(payload);
       }
-    }
+    },
+  );
 
-    // Filter out bump commits.
-    if (BUMP_COMMIT_PATTERN.test(payload.commit.message)) continue;
-
-    unreleased.push(payload);
-  }
   return unreleased;
 }
 
