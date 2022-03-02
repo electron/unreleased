@@ -16,10 +16,10 @@ const argOptions = {
 
 const { argValues } = parseArgs(process.argv, argOptions);
 
-const branch = (argValues && argValues.branch) || 'main';
-const tag = (argValues && argValues.tag) || 'v17.0.0';
-const prefix = (argValues && argValues.prefix) || 'api-review';
-const author = (argValues && argValues.author) || null;
+const branch = argValues?.branch || 'main';
+const tag = argValues?.tag || 'v17.0.0';
+const prefix = argValues?.prefix || 'api-review';
+const author = argValues?.author || null;
 
 async function testIt() {
   try {
