@@ -49,7 +49,7 @@ app.get('/verify-semver', async (req, res) => {
   try {
     const commits = await fetchUnreleasedCommits(branch, true);
 
-    const semverType = await getSemverForCommitRange(commits);
+    const semverType = await getSemverForCommitRange(commits, branch);
 
     return res.json({ semverType });
   } catch (err) {
@@ -89,7 +89,7 @@ app.post('/verify-semver', async (req, res) => {
     const commits = await fetchUnreleasedCommits(branch);
     console.info(`Found ${commits.length} commits unreleased on ${branch}`);
 
-    const semverType = await getSemverForCommitRange(commits);
+    const semverType = await getSemverForCommitRange(commits, branch);
     console.info(`Determined that next release on ${branch} is ${semverType}`);
 
     postToSlack(
