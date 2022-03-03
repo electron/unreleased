@@ -25,7 +25,8 @@ async function testIt() {
   try {
     console.log(`Testing fetchUnreleasedCommits for ${branch}`);
     const commits = await fetchUnreleasedCommits(branch, true);
-    console.log(`Testing  getSemverForCommitRange for ${branch}`);
+    console.log(`ok ${commits.length} unreleased commits found for ${branch}`);
+    console.log(`Testing getSemverForCommitRange for ${branch}`);
     const semverType = await getSemverForCommitRange(commits);
     console.log(
       `ok getting getSemverForCommitRange; semver type for ${branch} is ${semverType}`,
