@@ -48,22 +48,25 @@ initialCacheFill = fetchTags(true);
 // Fetch all unreleased commits for a specified release line branch.
 async function fetchUnreleasedCommits(branch, force = false) {
   const tags = await fetchTags(force);
-  const unreleased = [];
 
-  octokit.paginate(
-    octokit.repos.listCommits,
-    {
-      owner: ORGANIZATION_NAME,
-      repo: REPO_NAME,
-      sha: branch,
-    },
-    async ({ data }, done) => {
-      for (const payload of data) {
+  const unreleased = [];
+  await (async () => {
+    for await (const response of octokit.paginate.iterator(
+      octokit.repos.listCommits,
+      {
+        owner: ORGANIZATION_NAME,
+        repo: REPO_NAME,
+        sha: branch,
+      },
+    )) {
+      let foundLastRelease = false;
+      for (const payload of response.data) {
         const tag = tags.find(t => t.commit.sha === payload.sha);
         if (tag) {
           const isDraft = await releaseIsDraft(tag.name);
           if (!isDraft) {
-            done();
+            foundLastRelease = true;
+            break;
           }
         }
 
@@ -72,8 +75,11 @@ async function fetchUnreleasedCommits(branch, force = false) {
 
         unreleased.push(payload);
       }
-    },
-  );
+      if (foundLastRelease) {
+        break;
+      }
+    }
+  })();
 
   return unreleased;
 }

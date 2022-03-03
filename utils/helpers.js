@@ -33,7 +33,7 @@ async function getSemverForCommitRange(commits, branch) {
   let resultantSemver = SEMVER_TYPE.PATCH;
   for (const commit of commits) {
     commitQueue.push(async () => {
-      octokit.paginate(
+      await octokit.paginate(
         octokit.pulls.list,
         {
           owner: ORGANIZATION_NAME,
