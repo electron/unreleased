@@ -26,10 +26,12 @@ async function fetchTags(force = false) {
       {
         owner: ORGANIZATION_NAME,
         repo: REPO_NAME,
+        per_page: 100,
       },
       ({ data }, done) => {
         for (const tag of data) {
-          if (!force && isCached(tag)) done(); // stop octokit pagination
+          // Stop pagination if we're not repopulating the cache.
+          if (!force && isCached(tag)) done();
           tagsCache.push(tag);
         }
       },
@@ -42,14 +44,14 @@ async function fetchTags(force = false) {
     });
 }
 
-// populate the cache on startup
+// Populate the cache on startup.
 initialCacheFill = fetchTags(true);
 
 // Fetch all unreleased commits for a specified release line branch.
 async function fetchUnreleasedCommits(branch, force = false) {
   const tags = await fetchTags(force);
-
   const unreleased = [];
+
   await (async () => {
     for await (const response of octokit.paginate.iterator(
       octokit.repos.listCommits,
@@ -57,6 +59,7 @@ async function fetchUnreleasedCommits(branch, force = false) {
         owner: ORGANIZATION_NAME,
         repo: REPO_NAME,
         sha: branch,
+        per_page: 100,
       },
     )) {
       let foundLastRelease = false;
