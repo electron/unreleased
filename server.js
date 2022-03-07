@@ -35,6 +35,8 @@ app.get('/verify-semver', async (req, res) => {
   if (req.headers.authorization !== process.env.VERIFY_SEMVER_AUTH_HEADER)
     return res.status(401).end();
 
+  req.setTimeout(5000000);
+
   const { branch } = req.query;
 
   const branches = await getSupportedBranches();
@@ -48,8 +50,10 @@ app.get('/verify-semver', async (req, res) => {
 
   try {
     const commits = await fetchUnreleasedCommits(branch, true);
+    console.info(`Found ${commits.length} commits unreleased on ${branch}`);
 
     const semverType = await getSemverForCommitRange(commits, branch);
+    console.info(`Determined that next release on ${branch} is ${semverType}`);
 
     return res.json({ semverType });
   } catch (err) {
