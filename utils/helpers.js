@@ -26,54 +26,40 @@ const SEMVER_TYPE = {
 
 // Filter through commits in a given range and determine the overall semver type.
 async function getSemverForCommitRange(commits, branch) {
-  const commitQueue = queue({
-    concurrency: 5,
-  });
-
   let resultantSemver = SEMVER_TYPE.PATCH;
-  for (const commit of commits) {
-    commitQueue.push(async () => {
-      await octokit.paginate(
-        octokit.pulls.list,
-        {
-          owner: ORGANIZATION_NAME,
-          repo: REPO_NAME,
-          state: 'closed',
-          base: branch,
-        },
-        ({ data }, done) => {
-          const prs = data.filter(pr => pr.merge_commit_sha === commit.sha);
-          if (prs.length > 0) {
-            if (prs.length === 1) {
-              const pr = prs[0];
-              const labels = pr.labels.map(label => label.name);
-              if (labels.some(label => label === SEMVER_TYPE.MAJOR)) {
-                resultantSemver = SEMVER_TYPE.MAJOR;
-              } else if (
-                labels.some(label => label === SEMVER_TYPE.MINOR) &&
-                resultantSemver !== SEMVER_TYPE.MAJOR
-              ) {
-                resultantSemver = SEMVER_TYPE.MINOR;
-              }
-              done();
-            } else {
-              throw new Error(
-                `Invalid number of PRs associated with ${commit.sha}`,
-                prs,
-              );
-            }
-          }
-        },
-      );
-    });
-  }
+  const allClosedPrs = await octokit.paginate(
+    octokit.pulls.list,
+    {
+      owner: ORGANIZATION_NAME,
+      repo: REPO_NAME,
+      state: 'closed',
+      base: branch,
+    },
+  );
 
-  await new Promise((resolve, reject) => {
-    commitQueue.start(err => {
-      if (err) return reject(err);
-      resolve();
-    });
-  });
+  for (const commit of commits) {
+    const prs = allClosedPrs.filter(pr => pr.merge_commit_sha === commit.sha);
+    if (prs.length > 0) {
+      if (prs.length === 1) {
+        const pr = prs[0];
+        const labels = pr.labels.map(label => label.name);
+        if (labels.some(label => label === SEMVER_TYPE.MAJOR)) {
+          resultantSemver = SEMVER_TYPE.MAJOR;
+        } else if (
+          labels.some(label => label === SEMVER_TYPE.MINOR) &&
+          resultantSemver !== SEMVER_TYPE.MAJOR
+        ) {
+          resultantSemver = SEMVER_TYPE.MINOR;
+        }
+        done();
+      } else {
+        throw new Error(
+          `Invalid number of PRs associated with ${commit.sha}`,
+          prs,
+        );
+      }
+    }
+  }
 
   return resultantSemver;
 }
