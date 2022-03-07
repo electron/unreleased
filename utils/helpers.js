@@ -82,13 +82,15 @@ async function fetchInitiator(req) {
 // Determine whether a given release is in draft state or not.
 async function releaseIsDraft(tag) {
   try {
-    const { draft } = await octokit.repos.getReleaseByTag({
+    const {
+      data: { draft },
+    } = await octokit.repos.getReleaseByTag({
       owner: ORGANIZATION_NAME,
       repo: REPO_NAME,
       tag,
     });
     return draft;
-  } catch (ignored) {
+  } catch {
     return false;
   }
 }
