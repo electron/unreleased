@@ -11,8 +11,8 @@
     "prettier:format": "prettier --write '**/*.js'",
     "prettier:lint": "prettier --check '**/*.js'",
     "start": "node server.js",
-    "test": "./node_modules/.bin/mocha",
-    "test:ghapi": "node utils/test-gh-apis.js"
+    "test": "mocha **/*.spec.js",
+    "test:ghapi": "mocha -g 'API tests' --timeout 0"
   },
   "repository": {
     "type": "git",

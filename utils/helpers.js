@@ -38,13 +38,15 @@ async function getSemverForCommitRange(commits, branch) {
     if (prs.length > 0) {
       if (prs.length === 1) {
         const pr = prs[0];
-        const labels = pr.labels.map(label => label.name);
-        if (labels.some(label => label === SEMVER_TYPE.MAJOR)) {
+        const isMajor = pr.labels.some(
+          label => label.name === SEMVER_TYPE.MAJOR,
+        );
+        const isMinor = pr.labels.some(
+          label => label.name === SEMVER_TYPE.MINOR,
+        );
+        if (isMajor) {
           resultantSemver = SEMVER_TYPE.MAJOR;
-        } else if (
-          labels.some(label => label === SEMVER_TYPE.MINOR) &&
-          resultantSemver !== SEMVER_TYPE.MAJOR
-        ) {
+        } else if (isMinor) {
           resultantSemver = SEMVER_TYPE.MINOR;
         }
       } else {
