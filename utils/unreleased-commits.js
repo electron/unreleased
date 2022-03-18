@@ -1,55 +1,46 @@
 const { octokit, linkifyPRs, releaseIsDraft } = require('./helpers');
+const { graphql } = require('@octokit/graphql');
 
 const {
   BUMP_COMMIT_PATTERN,
   ORGANIZATION_NAME,
   REPO_NAME,
+  GITHUB_TOKEN,
 } = require('../constants');
 
-// Fetch every tag all the time is expensive, GitHub returns the most recent tags first
-// So we fetch all tags once, then the next time we only fetch new tags until we find one
-// we have seen before
-const tagsCache = [];
-
-function isCached(tag) {
-  return !!tagsCache.find(t => t.node_id === tag.node_id);
-}
-
-let initialCacheFill;
-
-async function fetchTags(force = false) {
-  if (initialCacheFill) await initialCacheFill;
-
-  return octokit
-    .paginate(
-      octokit.repos.listTags,
-      {
-        owner: ORGANIZATION_NAME,
-        repo: REPO_NAME,
-        per_page: 100,
-      },
-      ({ data }, done) => {
-        for (const tag of data) {
-          // Stop pagination if we're not repopulating the cache.
-          if (!force && isCached(tag)) done();
-          tagsCache.push(tag);
+async function fetchTags() {
+  return graphql({
+    query: `{
+      repository(owner: "electron", name: "electron") {
+        refs(refPrefix: "refs/tags/", first: 100, orderBy: { field: TAG_COMMIT_DATE, direction: DESC }) {
+          edges {
+            node {
+              name
+              target {
+                commitUrl
+              }
+            }
+          }
         }
-      },
-    )
-    .then(() => {
-      return tagsCache;
-    })
-    .catch(err => {
-      console.error('Failed to prepopulate tag cache', err);
+      }
+    }`,
+    headers: {
+      authorization: `token ${GITHUB_TOKEN}`,
+    },
+  }).then(({ repository }) => {
+    return repository.refs.edges.map(edge => {
+      const url = edge.node.target.commitUrl.split('/');
+      return {
+        name: edge.node.name,
+        commit_sha: url[url.length - 1],
+      };
     });
+  });
 }
-
-// Populate the cache on startup.
-initialCacheFill = fetchTags(true);
 
 // Fetch all unreleased commits for a specified release line branch.
-async function fetchUnreleasedCommits(branch, force = false) {
-  const tags = await fetchTags(force);
+async function fetchUnreleasedCommits(branch) {
+  const tags = await fetchTags();
   const unreleased = [];
 
   await (async () => {
@@ -64,7 +55,7 @@ async function fetchUnreleasedCommits(branch, force = false) {
     )) {
       let foundLastRelease = false;
       for (const payload of response.data) {
-        const tag = tags.find(t => t.commit.sha === payload.sha);
+        const tag = tags.find(t => t.commit_sha === payload.sha);
         if (tag) {
           const isDraft = await releaseIsDraft(tag.name);
           if (!isDraft) {
