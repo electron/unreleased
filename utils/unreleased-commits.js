@@ -42,6 +42,7 @@ async function fetchTags() {
 async function fetchUnreleasedCommits(branch) {
   const tags = await fetchTags();
   const unreleased = [];
+  let lastTag = null;
 
   await (async () => {
     for await (const response of octokit.paginate.iterator(
@@ -60,6 +61,7 @@ async function fetchUnreleasedCommits(branch) {
           const isDraft = await releaseIsDraft(tag.name);
           if (!isDraft) {
             foundLastRelease = true;
+            lastTag = tag;
             break;
           }
         }
@@ -75,7 +77,7 @@ async function fetchUnreleasedCommits(branch) {
     }
   })();
 
-  return unreleased;
+  return { commits: unreleased, lastTag };
 }
 
 // Build the text blob that will be posted to Slack.

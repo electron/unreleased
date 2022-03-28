@@ -22,6 +22,7 @@ const {
   getSemverForCommitRange,
   getSupportedBranches,
   postToSlack,
+  SEMVER_TYPE,
 } = require('./utils/helpers');
 const { RELEASE_BRANCH_PATTERN } = require('./constants');
 
@@ -47,10 +48,14 @@ app.get('/verify-semver', async (req, res) => {
   }
 
   try {
-    const commits = await fetchUnreleasedCommits(branch);
+    const { unreleased: commits, lastTag } = await fetchUnreleasedCommits(
+      branch,
+    );
     console.info(`Found ${commits.length} commits unreleased on ${branch}`);
 
-    const semverType = await getSemverForCommitRange(commits, branch);
+    const semverType = lastTag?.prerelease
+      ? SEMVER_TYPE.PATCH
+      : await getSemverForCommitRange(commits, branch);
     console.info(`Determined that next release on ${branch} is ${semverType}`);
 
     return res.json({ semverType });
@@ -88,10 +93,12 @@ app.post('/verify-semver', async (req, res) => {
   }
 
   try {
-    const commits = await fetchUnreleasedCommits(branch);
+    const { commits, lastTag } = await fetchUnreleasedCommits(branch);
     console.info(`Found ${commits.length} commits unreleased on ${branch}`);
 
-    const semverType = await getSemverForCommitRange(commits, branch);
+    const semverType = lastTag?.prerelease
+      ? SEMVER_TYPE.PATCH
+      : await getSemverForCommitRange(commits, branch);
     console.info(`Determined that next release on ${branch} is ${semverType}`);
 
     postToSlack(
@@ -278,7 +285,7 @@ app.post('/unreleased', async (req, res) => {
     for (const branch of branches) {
       console.log(`Auditing branch ${branch}`);
       try {
-        const commits = await fetchUnreleasedCommits(branch);
+        const { commits } = await fetchUnreleasedCommits(branch);
         console.log(`Found ${commits.length} commits on ${branch}`);
         postToSlack(
           {
@@ -322,7 +329,7 @@ app.post('/unreleased', async (req, res) => {
   }
 
   try {
-    const commits = await fetchUnreleasedCommits(auditTarget);
+    const { commits } = await fetchUnreleasedCommits(auditTarget);
     console.log(`Found ${commits.length} commits on ${auditTarget}`);
 
     postToSlack(
