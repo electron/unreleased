@@ -111,7 +111,7 @@ app.post('/verify-semver', async (req, res) => {
     postToSlack(
       {
         response_type: 'ephemeral',
-        text: `Error: ${err}`,
+        text: `Error: ${err.message}`,
       },
       req.body.response_url,
     );
@@ -175,7 +175,7 @@ app.post('/unmerged', async (req, res) => {
     postToSlack(
       {
         response_type: 'ephemeral',
-        text: `Error: ${err}`,
+        text: `Error: ${err.message}`,
       },
       req.body.response_url,
     );
@@ -257,7 +257,7 @@ app.post('/needs-manual', async (req, res) => {
     postToSlack(
       {
         response_type: 'ephemeral',
-        text: `Error: ${err}`,
+        text: `Error: ${err.message}`,
       },
       req.body.response_url,
     );
@@ -297,7 +297,7 @@ app.post('/unreleased', async (req, res) => {
         postToSlack(
           {
             response_type: 'ephemeral',
-            text: `Error: ${err}`,
+            text: `Error: ${err.message}`,
           },
           req.body.response_url,
         );
@@ -342,7 +342,7 @@ app.post('/unreleased', async (req, res) => {
     postToSlack(
       {
         response_type: 'ephemeral',
-        text: `Error: ${err}`,
+        text: `Error: ${err.message}`,
       },
       req.body.response_url,
     );
@@ -414,7 +414,7 @@ app.post('/audit-pre-release', async (req, res) => {
     postToSlack(
       {
         response_type: 'ephemeral',
-        text: `Error: ${err}`,
+        text: `Error: ${err.message}`,
       },
       req.body.response_url,
     );
@@ -459,7 +459,7 @@ app.post('/review-queue', async (req, res) => {
     postToSlack(
       {
         response_type: 'ephemeral',
-        text: `Error: ${err}`,
+        text: `Error: ${err.message}`,
       },
       req.body.response_url,
     );
