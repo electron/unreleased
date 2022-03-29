@@ -19,12 +19,12 @@ const author = argValues?.author || null;
 
 describe('API tests', () => {
   it('can fetch unreleased commits', async () => {
-    const commits = await fetchUnreleasedCommits(branch);
+    const { commits } = await fetchUnreleasedCommits(branch);
     expect(commits).to.be.an('array');
   });
 
   it('can get the semver value for a commit range', async () => {
-    const commits = await fetchUnreleasedCommits(branch);
+    const { commits } = await fetchUnreleasedCommits(branch);
     const semverType = await getSemverForCommitRange(commits);
     const values = ['semver/major', 'semver/minor', 'semver/patch'];
     expect(values).to.contain(semverType);

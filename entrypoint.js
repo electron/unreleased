@@ -75,7 +75,7 @@ Toolkit.run(
 
         let commits;
         if (ACTION_TYPE === Actions.UNRELEASED) {
-          commits = await fetchUnreleasedCommits(branch);
+          commits = (await fetchUnreleasedCommits(branch)).commits;
         } else if (ACTION_TYPE === Actions.NEEDS_MANUAL) {
           commits = await fetchNeedsManualPRs(branch, null /* author */);
         }
