@@ -32,6 +32,7 @@ async function fetchTags() {
       const url = edge.node.target.commitUrl.split('/');
       return {
         name: edge.node.name,
+        prerelease: edge.node.name.includes('-'),
         commit_sha: url[url.length - 1],
       };
     });

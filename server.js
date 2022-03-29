@@ -48,9 +48,7 @@ app.get('/verify-semver', async (req, res) => {
   }
 
   try {
-    const { unreleased: commits, lastTag } = await fetchUnreleasedCommits(
-      branch,
-    );
+    const { commits, lastTag } = await fetchUnreleasedCommits(branch);
     console.info(`Found ${commits.length} commits unreleased on ${branch}`);
 
     const semverType = lastTag?.prerelease
