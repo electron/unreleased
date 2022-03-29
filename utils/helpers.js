@@ -23,6 +23,10 @@ const SEMVER_TYPE = {
   PATCH: 'semver/patch',
 };
 
+const isInvalidBranch = (branches, branch) => {
+  return !RELEASE_BRANCH_PATTERN.test(branch) || !branches.includes(branch);
+};
+
 // Filter through commits in a given range and determine the overall semver type.
 async function getSemverForCommitRange(commits, branch) {
   let resultantSemver = SEMVER_TYPE.PATCH;
@@ -148,6 +152,7 @@ module.exports = {
   fetchInitiator,
   getSemverForCommitRange,
   getSupportedBranches,
+  isInvalidBranch,
   linkifyPRs,
   octokit,
   postToSlack,

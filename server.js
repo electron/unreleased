@@ -21,11 +21,11 @@ const {
   fetchInitiator,
   getSemverForCommitRange,
   getSupportedBranches,
+  isInvalidBranch,
   octokit,
   postToSlack,
   SEMVER_TYPE,
 } = require('./utils/helpers');
-const { RELEASE_BRANCH_PATTERN } = require('./constants');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -40,10 +40,7 @@ app.get('/verify-semver', async (req, res) => {
   const { branch } = req.query;
 
   const branches = await getSupportedBranches();
-
-  const isInvalidBranch =
-    !RELEASE_BRANCH_PATTERN.test(branch) || !branches.includes(branch);
-  if (isInvalidBranch) {
+  if (isInvalidBranch(branches, branch)) {
     res.status(400).json({ error: `${branch} is not a valid branch` });
     return;
   }
@@ -77,14 +74,12 @@ app.post('/verify-semver', async (req, res) => {
     `${initiator.name} initiated release semver verification for branch: ${branch}`,
   );
 
-  const isInvalidBranch =
-    !RELEASE_BRANCH_PATTERN.test(branch) || !branches.includes(branch);
-  if (isInvalidBranch) {
+  if (isInvalidBranch(branches, branch)) {
     console.error(`${branch} is not a valid branch`);
     postToSlack(
       {
         response_type: 'ephemeral',
-        text: 'Branch name not valid. Try again?',
+        text: `Invalid branch *${branch}*. Try again?`,
       },
       req.body.response_url,
     );
@@ -130,14 +125,12 @@ app.post('/unmerged', async (req, res) => {
     `${initiator.name} initiated unmerged audit for branch: ${branch}`,
   );
 
-  const isInvalidBranch =
-    !RELEASE_BRANCH_PATTERN.test(branch) || !branches.includes(branch);
-  if (branch !== 'all' && isInvalidBranch) {
+  if (branch !== 'all' && isInvalidBranch(branches, branch)) {
     console.error(`${branch} is not a valid branch`);
     postToSlack(
       {
         response_type: 'ephemeral',
-        text: 'Branch name not valid. Try again?',
+        text: `Invalid branch *${branch}*. Try again?`,
       },
       req.body.response_url,
     );
@@ -206,14 +199,12 @@ app.post('/needs-manual', async (req, res) => {
     `${initiator.name} initiated needs-manual audit for branch: ${branch}`,
   );
 
-  const isInvalidBranch =
-    !RELEASE_BRANCH_PATTERN.test(branch) || !branches.includes(branch);
-  if (branch !== 'all' && isInvalidBranch) {
+  if (branch !== 'all' && isInvalidBranch(branches, branch)) {
     console.error(`${branch} is not a valid branch`);
     postToSlack(
       {
         response_type: 'ephemeral',
-        text: 'Branch name not valid. Try again?',
+        text: `Invalid branch *${branch}*. Try again?`,
       },
       req.body.response_url,
     );
@@ -228,7 +219,7 @@ app.post('/needs-manual', async (req, res) => {
       postToSlack(
         {
           response_type: 'ephemeral',
-          text: `GitHub user ${author} does not exist. Try again?`,
+          text: `GitHub user *${author}* does not exist. Try again?`,
         },
         req.body.response_url,
       );
@@ -285,25 +276,25 @@ app.post('/needs-manual', async (req, res) => {
 // not been released in a beta or stable.
 app.post('/unreleased', async (req, res) => {
   const branches = await getSupportedBranches();
+  const branch = req.body.text;
 
-  const auditTarget = req.body.text;
   const initiator = await fetchInitiator(req);
 
   // Allow for manual batch audit of all supported release branches.
-  if (auditTarget === 'all') {
+  if (branch === 'all') {
     console.log(
       `${initiator.name} triggered audit for all supported release branches`,
     );
 
-    for (const branch of branches) {
-      console.log(`Auditing branch ${branch}`);
+    for (const b of branches) {
+      console.log(`Auditing branch ${b}`);
       try {
-        const { commits } = await fetchUnreleasedCommits(branch);
-        console.log(`Found ${commits.length} commits on ${branch}`);
+        const { commits } = await fetchUnreleasedCommits(b);
+        console.log(`Found ${commits.length} commits on ${b}`);
         postToSlack(
           {
             response_type: 'in_channel',
-            text: buildUnreleasedCommitsMessage(branch, commits, initiator.id),
+            text: buildUnreleasedCommitsMessage(b, commits, initiator.id),
           },
           req.body.response_url,
         );
@@ -323,18 +314,15 @@ app.post('/unreleased', async (req, res) => {
   }
 
   console.log(
-    `${initiator.name} initiated unreleased commit audit for branch: ${auditTarget}`,
+    `${initiator.name} initiated unreleased commit audit for branch: ${branch}`,
   );
 
-  if (
-    !RELEASE_BRANCH_PATTERN.test(auditTarget) ||
-    !branches.includes(auditTarget)
-  ) {
-    console.error(`${auditTarget} is not a valid branch`);
+  if (isInvalidBranch(branches, branch)) {
+    console.error(`${branch} is not a valid branch`);
     postToSlack(
       {
         response_type: 'ephemeral',
-        text: 'Branch name not valid. Try again?',
+        text: `Invalid branch *${branch}*. Try again?`,
       },
       req.body.response_url,
     );
@@ -342,13 +330,13 @@ app.post('/unreleased', async (req, res) => {
   }
 
   try {
-    const { commits } = await fetchUnreleasedCommits(auditTarget);
-    console.log(`Found ${commits.length} commits on ${auditTarget}`);
+    const { commits } = await fetchUnreleasedCommits(branch);
+    console.log(`Found ${commits.length} commits on ${branch}`);
 
     postToSlack(
       {
         response_type: 'in_channel',
-        text: buildUnreleasedCommitsMessage(auditTarget, commits, initiator.id),
+        text: buildUnreleasedCommitsMessage(branch, commits, initiator.id),
       },
       req.body.response_url,
     );
@@ -370,7 +358,6 @@ app.post('/unreleased', async (req, res) => {
 // release line or which are targeting said line and haven't been merged.
 app.post('/audit-pre-release', async (req, res) => {
   const branches = await getSupportedBranches();
-
   const branch = req.body.text;
 
   const initiator = await fetchInitiator(req);
@@ -378,12 +365,12 @@ app.post('/audit-pre-release', async (req, res) => {
     `${initiator.name} initiated pre-release audit for branch: ${branch}`,
   );
 
-  if (!RELEASE_BRANCH_PATTERN.test(branch) || !branches.includes(branch)) {
+  if (isInvalidBranch(branches, branch)) {
     console.error(`${branch} is not a valid branch`);
     postToSlack(
       {
         response_type: 'ephemeral',
-        text: 'Branch name not valid. Try again?',
+        text: `Invalid branch *${branch}*. Try again?`,
       },
       req.body.response_url,
     );
