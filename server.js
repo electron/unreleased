@@ -21,6 +21,7 @@ const {
   fetchInitiator,
   getSemverForCommitRange,
   getSupportedBranches,
+  octokit,
   postToSlack,
   SEMVER_TYPE,
 } = require('./utils/helpers');
@@ -220,6 +221,20 @@ app.post('/needs-manual', async (req, res) => {
   }
 
   if (author) {
+    try {
+      await octokit.users.getByUsername({ username: author });
+    } catch {
+      console.error(`${author} is not a valid GitHub user`);
+      postToSlack(
+        {
+          response_type: 'ephemeral',
+          text: `GitHub user ${author} does not exist. Try again?`,
+        },
+        req.body.response_url,
+      );
+      return res.status(200).end();
+    }
+
     console.log(`Scoping needs-manual PRs to those opened by ${author}`);
   }
 
