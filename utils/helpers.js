@@ -1,7 +1,6 @@
 const https = require('https');
 const url = require('url');
 const { WebClient } = require('@slack/web-api');
-const { Octokit } = require('@octokit/rest');
 
 const {
   ORGANIZATION_NAME,
@@ -9,13 +8,10 @@ const {
   NUM_SUPPORTED_VERSIONS,
   RELEASE_BRANCH_PATTERN,
   SLACK_BOT_TOKEN,
-  GITHUB_TOKEN,
 } = require('../constants');
+const { getOctokit } = require('./octokit');
 
 const slackWebClient = new WebClient(SLACK_BOT_TOKEN);
-const octokit = new Octokit({
-  auth: GITHUB_TOKEN,
-});
 
 const SEMVER_TYPE = {
   MAJOR: 'semver/major',
@@ -30,7 +26,8 @@ const isInvalidBranch = (branches, branch) => {
 // Filter through commits in a given range and determine the overall semver type.
 async function getSemverForCommitRange(commits, branch) {
   let resultantSemver = SEMVER_TYPE.PATCH;
-  const allClosedPrs = await octokit.paginate(octokit.pulls.list, {
+  const octokit = await getOctokit();
+  const allClosedPrs = octokit.paginate(octokit.pulls.list, {
     owner: ORGANIZATION_NAME,
     repo: REPO_NAME,
     state: 'closed',
@@ -87,6 +84,8 @@ async function fetchInitiator(req) {
 
 // Determine whether a given release is in draft state or not.
 async function releaseIsDraft(tag) {
+  const octokit = await getOctokit();
+
   try {
     const {
       data: { draft },
@@ -103,6 +102,8 @@ async function releaseIsDraft(tag) {
 
 // Fetch an array of the currently supported branches.
 async function getSupportedBranches() {
+  const octokit = await getOctokit();
+
   const branches = await octokit.paginate(
     octokit.repos.listBranches.endpoint.merge({
       owner: ORGANIZATION_NAME,
@@ -154,7 +155,6 @@ module.exports = {
   getSupportedBranches,
   isInvalidBranch,
   linkifyPRs,
-  octokit,
   postToSlack,
   releaseIsDraft,
   SEMVER_TYPE,

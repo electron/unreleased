@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/electron/unreleased#readme",
   "dependencies": {
+    "@electron/github-app-auth": "^1.2.0",
     "@octokit/rest": "^18.9.0",
     "@pkgjs/parseargs": "^0.3.0",
     "@slack/web-api": "^5.0.0",

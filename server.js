@@ -22,10 +22,10 @@ const {
   getSemverForCommitRange,
   getSupportedBranches,
   isInvalidBranch,
-  octokit,
   postToSlack,
   SEMVER_TYPE,
 } = require('./utils/helpers');
+const { getOctokit } = require('./utils/octokit');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -213,6 +213,7 @@ app.post('/needs-manual', async (req, res) => {
 
   if (author) {
     try {
+      const octokit = await getOctokit();
       await octokit.users.getByUsername({ username: author });
     } catch {
       console.error(`${author} is not a valid GitHub user`);

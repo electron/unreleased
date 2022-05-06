@@ -1,4 +1,5 @@
-const { octokit, linkifyPRs, releaseIsDraft } = require('./helpers');
+const { linkifyPRs, releaseIsDraft } = require('./helpers');
+const { getOctokit } = require('./octokit');
 const { graphql } = require('@octokit/graphql');
 
 const {
@@ -45,6 +46,7 @@ async function fetchUnreleasedCommits(branch) {
   const unreleased = [];
   let lastTag = null;
 
+  const octokit = await getOctokit();
   await (async () => {
     for await (const response of octokit.paginate.iterator(
       octokit.repos.listCommits,
