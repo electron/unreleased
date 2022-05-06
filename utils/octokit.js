@@ -1,6 +1,6 @@
 const {
-  getTokenForRepo,
   appCredentialsFromString,
+  getAuthOptionsForRepo,
 } = require('@electron/github-app-auth');
 const {
   GITHUB_TOKEN,
@@ -10,21 +10,27 @@ const {
 } = require('../constants');
 const { Octokit } = require('@octokit/rest');
 
+let octokit;
 const getOctokit = async () => {
-  let auth;
+  if (octokit) return octokit;
+
   if (GITHUB_TOKEN) {
-    auth = GITHUB_TOKEN;
+    octokit = new Octokit({
+      auth: GITHUB_TOKEN,
+    });
   } else {
-    auth = await getTokenForRepo(
+    const creds = appCredentialsFromString(UNRELEASED_GITHUB_APP_CREDS);
+    const authOpts = await getAuthOptionsForRepo(
       {
         owner: ORGANIZATION_NAME,
         name: REPO_NAME,
       },
-      appCredentialsFromString(UNRELEASED_GITHUB_APP_CREDS),
+      creds,
     );
+    octokit = new Octokit({ ...authOpts });
   }
 
-  return new Octokit({ auth });
+  return octokit;
 };
 
 module.exports = { getOctokit };
