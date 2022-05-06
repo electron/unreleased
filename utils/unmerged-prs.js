@@ -1,5 +1,5 @@
 const { getReleaseBlockers } = require('./commits-helpers');
-const { octokit } = require('./helpers');
+const { getOctokit } = require('./octokit');
 
 const { ORGANIZATION_NAME, REPO_NAME } = require('../constants');
 
@@ -9,6 +9,7 @@ const formatMessage = pr => {
 
 // Fetch all PRs targeting a specified release line branch that have NOT been merged.
 async function fetchUnmergedPRs(branch) {
+  const octokit = await getOctokit();
   return await octokit.paginate(octokit.pulls.list, {
     owner: ORGANIZATION_NAME,
     repo: REPO_NAME,

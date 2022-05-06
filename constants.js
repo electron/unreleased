@@ -6,6 +6,7 @@ const NUM_SUPPORTED_VERSIONS = process.env.NUM_SUPPORTED_VERSIONS || 5;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 const ACTION_TYPE = process.env.ACTION_TYPE;
+const UNRELEASED_GITHUB_APP_CREDS = process.env.UNRELEASED_GITHUB_APP_CREDS;
 
 const BLOCKS_RELEASE_LABEL =
   process.env.BLOCKS_RELEASE_LABEL || 'blocks-release';
@@ -27,4 +28,5 @@ module.exports = {
   RELEASE_BRANCH_PATTERN,
   REPO_NAME,
   SLACK_BOT_TOKEN,
+  UNRELEASED_GITHUB_APP_CREDS,
 };

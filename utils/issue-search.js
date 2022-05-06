@@ -1,4 +1,4 @@
-const { octokit } = require('./helpers');
+const { getOctokit } = require('./octokit');
 
 // Fetch issues matching the given search criteria.
 // e.g.
@@ -9,6 +9,7 @@ const { octokit } = require('./helpers');
 //   label: 'needs-manual-bp/10-x-y'
 // }
 async function searchIssues(search) {
+  const octokit = await getOctokit();
   const { data } = await octokit.search.issuesAndPullRequests({
     q: `${[...Object.entries(search)].map(([k, v]) => `${k}:${v}`).join('+')}`,
   });
