@@ -27,7 +27,7 @@ const isInvalidBranch = (branches, branch) => {
 async function getSemverForCommitRange(commits, branch) {
   let resultantSemver = SEMVER_TYPE.PATCH;
   const octokit = await getOctokit();
-  const allClosedPrs = octokit.paginate(octokit.pulls.list, {
+  const allClosedPrs = await octokit.paginate(octokit.pulls.list, {
     owner: ORGANIZATION_NAME,
     repo: REPO_NAME,
     state: 'closed',
