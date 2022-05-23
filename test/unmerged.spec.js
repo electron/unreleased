@@ -9,7 +9,8 @@ describe('unmerged', () => {
 
     const expected = `* <https://github.com/electron/electron/pull/24838|#24838> - fix: provide AXTextChangeValueStartMarker for macOS a11y value change notifications
 * <https://github.com/electron/electron/pull/24706|#24706> - chore: bump chromium to 85.0.4183.65 (10-x-y)
- *2 unmerged PR(s) targeting \`10-x-y\`!*`;
+* <https://github.com/electron/electron/pull/20625|#20625> (*DRAFT*) - fix: loading dedicated/shared worker scripts over custom protocol
+ *3 unmerged PR(s) targeting \`10-x-y\`!*`;
 
     expect(message).to.equal(expected);
   });

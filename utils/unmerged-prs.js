@@ -4,7 +4,9 @@ const { getOctokit } = require('./octokit');
 const { ORGANIZATION_NAME, REPO_NAME } = require('../constants');
 
 const formatMessage = pr => {
-  return `* <${pr.html_url}|#${pr.number}> - ${pr.title.split(/[\r\n]/, 1)[0]}`;
+  return `* <${pr.html_url}|#${pr.number}>${pr.draft ? ' (*DRAFT*)' : ''} - ${
+    pr.title.split(/[\r\n]/, 1)[0]
+  }`;
 };
 
 // Fetch all PRs targeting a specified release line branch that have NOT been merged.
