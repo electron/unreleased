@@ -169,7 +169,6 @@ If you would like to use `unreleased`, there are several environment variables y
 * `ORGANIZATION_NAME` - the name of your organization, e.g. `electron`.
 * `REPO_NAME` - the name of the repository to run audits in, e.g. `electron`.
 * `NUM_SUPPORTED_VERSIONS` - the number of supported backport release lines (default is 4).
-* `GITHUB_TOKEN` - the token that will be used to fetch data from the GitHub API (required).
 * `SLACK_BOT_TOKEN` - the token that will be used to post audit result into a Slack workspace channel (required).
 * `BLOCKS_RELEASE_LABEL` - the GitHub label used to denote unmerged pull requests that should block a release (default is `blocks-release`).
 * `AUDIT_POST_CHANNEL` - the Slack workspace channel in which to post audit results.

@@ -1,15 +1,21 @@
 const { linkifyPRs, releaseIsDraft } = require('./helpers');
 const { getOctokit } = require('./octokit');
 const { graphql } = require('@octokit/graphql');
+const {
+  appCredentialsFromString,
+  getTokenForRepo,
+} = require('@electron/github-app-auth');
 
 const {
   BUMP_COMMIT_PATTERN,
   ORGANIZATION_NAME,
   REPO_NAME,
-  GITHUB_TOKEN,
+  UNRELEASED_GITHUB_APP_CREDS,
 } = require('../constants');
 
 async function fetchTags() {
+  const creds = appCredentialsFromString(UNRELEASED_GITHUB_APP_CREDS);
+
   return graphql({
     query: `{
       repository(owner: "electron", name: "electron") {
@@ -26,7 +32,13 @@ async function fetchTags() {
       }
     }`,
     headers: {
-      authorization: `token ${GITHUB_TOKEN}`,
+      authorization: `token ${await getTokenForRepo(
+        {
+          owner: ORGANIZATION_NAME,
+          name: REPO_NAME,
+        },
+        creds,
+      )}`,
     },
   }).then(({ repository }) => {
     return repository.refs.edges.map(edge => {

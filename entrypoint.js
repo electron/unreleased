@@ -116,6 +116,6 @@ Toolkit.run(
     }
   },
   {
-    secrets: ['GITHUB_TOKEN', 'SLACK_BOT_TOKEN'],
+    secrets: ['SLACK_BOT_TOKEN'],
   },
 );
