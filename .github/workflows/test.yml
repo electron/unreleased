@@ -19,9 +19,9 @@ jobs:
         version: 16.x
     - name: Test
       run: |
-        npm ci
-        npm test
+        yarn
+        yarn test
     - name: Test GitHub API calls
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: npm run test:ghapi
+      run: yarn run test:ghapi

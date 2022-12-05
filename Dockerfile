@@ -1,4 +1,4 @@
-FROM node:10
+FROM node:16
 
 # Labels for GitHub to read the action
 LABEL "com.github.actions.name"="Check Unreleased Commits"
@@ -10,7 +10,7 @@ LABEL "com.github.actions.color"="gray-dark"
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN yarn
 
 # Copy the rest of your action's code
 COPY . .
