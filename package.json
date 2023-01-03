@@ -31,7 +31,7 @@
     "@slack/web-api": "^5.15.0",
     "actions-toolkit": "^2.0.0",
     "body-parser": "^1.18.3",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "https": "^1.0.0",
     "prettier": "^1.19.1",
     "queue": "^6.0.2",
