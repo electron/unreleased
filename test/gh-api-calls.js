@@ -25,7 +25,7 @@ describe('API tests', () => {
 
   it('can get the semver value for a commit range', async () => {
     const { commits } = await fetchUnreleasedCommits(branch);
-    const semverType = await getSemverForCommitRange(commits);
+    const semverType = await getSemverForCommitRange(commits, branch);
     const values = ['semver/major', 'semver/minor', 'semver/patch'];
     expect(values).to.contain(semverType);
   });
