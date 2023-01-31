@@ -16,7 +16,7 @@ jobs:
     - name: Use Node.js 18.x
       uses: actions/setup-node@v3
       with:
-        version: 18.x
+        node-version: 18.x
     - name: Test - Unit Tests
       run: |
         npm ci
