@@ -1,5 +1,9 @@
 ## Electron Unreleased Commit Audit
 
+[![Test](https://github.com/electron/unreleased/actions/workflows/test.yml/badge.svg)](https://github.com/electron/unreleased/actions/workflows/test.yml)
+[![Perform Manual Backport Audit](https://github.com/electron/unreleased/actions/workflows/needs-manual-audit.yml/badge.svg)](https://github.com/electron/unreleased/actions/workflows/needs-manual-audit.yml)
+[![Perform Unreleased Audit](https://github.com/electron/unreleased/actions/workflows/unreleased-audit.yml/badge.svg)](https://github.com/electron/unreleased/actions/workflows/unreleased-audit.yml)
+
 This repository allows users to query information relating to release branches on a desired repository.
 
 There are four potential actions possible:
