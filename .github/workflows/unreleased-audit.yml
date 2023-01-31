@@ -17,4 +17,5 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        UNRELEASED_GITHUB_APP_CREDS: ${{ secrets.UNRELEASED_GITHUB_APP_CREDS }}
         ACTION_TYPE: 'unreleased'
