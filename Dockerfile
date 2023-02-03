@@ -1,4 +1,4 @@
-FROM node:10
+FROM node:18
 
 # Labels for GitHub to read the action
 LABEL "com.github.actions.name"="Check Unreleased Commits"
