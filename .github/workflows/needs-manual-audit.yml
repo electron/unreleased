@@ -1,6 +1,7 @@
 name: Perform Manual Backport Audit
 
 on:
+  workflow_dispatch:
   schedule:
   - cron: '0 16 * * 3'
 
