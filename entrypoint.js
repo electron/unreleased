@@ -118,4 +118,6 @@ async function run() {
   }
 }
 
-run();
+run().catch(e => {
+  core.setFailed(`Workflow failed: ${e.message}`);
+});
