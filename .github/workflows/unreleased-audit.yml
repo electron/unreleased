@@ -9,13 +9,12 @@ jobs:
     name: Perform Unreleased Audit
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # tag: v3.3.0
       with:
         ref: main
     - name: Check unreleased commits
       uses: ./
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         UNRELEASED_GITHUB_APP_CREDS: ${{ secrets.UNRELEASED_GITHUB_APP_CREDS }}
         ACTION_TYPE: 'unreleased'
