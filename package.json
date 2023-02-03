@@ -25,11 +25,11 @@
   },
   "homepage": "https://github.com/electron/unreleased#readme",
   "dependencies": {
+    "@actions/core": "^1.10.0",
     "@electron/github-app-auth": "^1.2.0",
     "@octokit/rest": "^18.9.0",
     "@pkgjs/parseargs": "^0.3.0",
     "@slack/web-api": "^5.15.0",
-    "actions-toolkit": "^2.0.0",
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "https": "^1.0.0",

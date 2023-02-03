@@ -1,4 +1,4 @@
-const { Toolkit } = require('actions-toolkit');
+const core = require('@actions/core');
 const { WebClient } = require('@slack/web-api');
 
 const {
@@ -28,30 +28,76 @@ const Actions = {
   REVIEW_QUEUE: 'review-queue',
 };
 
+// eslint-disable-next-line no-useless-escape
+const success = `\e[0;32m`;
+
 const { getSupportedBranches } = require('./utils/helpers');
 
 const slackWebClient = new WebClient(SLACK_BOT_TOKEN);
 
-Toolkit.run(
-  async tools => {
-    if (ACTION_TYPE === Actions.REVIEW_QUEUE) {
-      tools.log.info(`Auditing ${ACTION_TYPE} PRs`);
+async function run() {
+  if (ACTION_TYPE === Actions.REVIEW_QUEUE) {
+    core.info(`Auditing ${ACTION_TYPE} PRs`);
 
-      const prefix = 'api-review';
-      const prs = await fetchReviewQueuePRs(prefix);
+    const prefix = 'api-review';
+    const prs = await fetchReviewQueuePRs(prefix);
 
-      tools.log.info(
-        `Found ${prs.length} open PRs with label \`${prefix}/requested 🗳\`'`,
+    core.info(
+      `Found ${prs.length} open PRs with label \`${prefix}/requested 🗳\`'`,
+    );
+
+    let text;
+    if (!prs || prs.length === 0) {
+      text = `*No open PRs with label \`${prefix}/requested 🗳\`*`;
+    } else {
+      text = `${prs.length} PR${
+        prs.length === 1 ? '' : 's'
+      } awaiting ${prefix} (from automatic audit):\n`;
+      text += buildReviewQueueMessage(prefix, prs);
+    }
+
+    const result = await slackWebClient.chat.postMessage({
+      channel: AUDIT_POST_CHANNEL,
+      unfurl_links: false,
+      text,
+    });
+
+    if (result.ok) {
+      core.info(`${success}Audit message sent for review-queue PRs 🚀`);
+    } else {
+      core.setFailed(
+        'Unable to send audit info for review-queue PRs: ' + result.error,
       );
+    }
+  } else {
+    const initiatedBy = 'automatic audit';
+    const branches = await getSupportedBranches();
+    for (const branch of branches) {
+      core.info(`Auditing ${ACTION_TYPE} on branch ${branch}`);
 
-      let text;
-      if (!prs || prs.length === 0) {
-        text = `*No open PRs with label \`${prefix}/requested 🗳\`*`;
-      } else {
-        text = `${prs.length} PR${
-          prs.length === 1 ? '' : 's'
-        } awaiting ${prefix} (from automatic audit):\n`;
-        text += buildReviewQueueMessage(prefix, prs);
+      let commits;
+      if (ACTION_TYPE === Actions.UNRELEASED) {
+        commits = (await fetchUnreleasedCommits(branch)).commits;
+      } else if (ACTION_TYPE === Actions.NEEDS_MANUAL) {
+        commits = await fetchNeedsManualPRs(branch, null /* author */);
+      }
+
+      core.info(`Found ${commits.length} commits on ${branch}`);
+      if (ACTION_TYPE === 'unreleased' && commits.length >= 10) {
+        core.info(
+          `Reached ${commits.length} commits on ${branch}, time to release.`,
+        );
+      }
+
+      let text = '';
+      if (ACTION_TYPE === Actions.UNRELEASED) {
+        text += buildUnreleasedCommitsMessage(branch, commits, initiatedBy);
+      } else if (ACTION_TYPE === Actions.NEEDS_MANUAL) {
+        text += buildNeedsManualPRsMessage(
+          branch,
+          commits,
+          true /* shouldRemind */,
+        );
       }
 
       const result = await slackWebClient.chat.postMessage({
@@ -61,61 +107,15 @@ Toolkit.run(
       });
 
       if (result.ok) {
-        tools.exit.success('Audit message sent for review-queue PRs 🚀');
+        core.info(`${success}Audit message sent for ${branch} 🚀`);
       } else {
-        tools.exit.failure(
-          'Unable to send audit info for review-queue PRs: ' + result.error,
+        core.setFailed(
+          `Unable to send audit info for ${branch}: ` + result.error,
         );
       }
-    } else {
-      const initiatedBy = 'automatic audit';
-      const branches = await getSupportedBranches();
-      for (const branch of branches) {
-        tools.log.info(`Auditing ${ACTION_TYPE} on branch ${branch}`);
-
-        let commits;
-        if (ACTION_TYPE === Actions.UNRELEASED) {
-          commits = (await fetchUnreleasedCommits(branch)).commits;
-        } else if (ACTION_TYPE === Actions.NEEDS_MANUAL) {
-          commits = await fetchNeedsManualPRs(branch, null /* author */);
-        }
-
-        tools.log.info(`Found ${commits.length} commits on ${branch}`);
-        if (ACTION_TYPE === 'unreleased' && commits.length >= 10) {
-          tools.log.info(
-            `Reached ${commits.length} commits on ${branch}, time to release.`,
-          );
-        }
-
-        let text = '';
-        if (ACTION_TYPE === Actions.UNRELEASED) {
-          text += buildUnreleasedCommitsMessage(branch, commits, initiatedBy);
-        } else if (ACTION_TYPE === Actions.NEEDS_MANUAL) {
-          text += buildNeedsManualPRsMessage(
-            branch,
-            commits,
-            true /* shouldRemind */,
-          );
-        }
-
-        const result = await slackWebClient.chat.postMessage({
-          channel: AUDIT_POST_CHANNEL,
-          unfurl_links: false,
-          text,
-        });
-
-        if (result.ok) {
-          tools.log.info(`Audit message sent for ${branch} 🚀`);
-        } else {
-          tools.exit.failure(
-            `Unable to send audit info for ${branch}: ` + result.error,
-          );
-        }
-      }
-      tools.exit.success(`All release branches audited`);
     }
-  },
-  {
-    secrets: ['SLACK_BOT_TOKEN', 'UNRELEASED_GITHUB_APP_CREDS'],
-  },
-);
+    core.info(`${success}All release branches audited successfully`);
+  }
+}
+
+run();
