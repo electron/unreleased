@@ -28,9 +28,6 @@ const Actions = {
   REVIEW_QUEUE: 'review-queue',
 };
 
-// eslint-disable-next-line no-useless-escape
-const success = `\e[0;32m`;
-
 const { getSupportedBranches } = require('./utils/helpers');
 
 const slackWebClient = new WebClient(SLACK_BOT_TOKEN);
@@ -63,10 +60,10 @@ async function run() {
     });
 
     if (result.ok) {
-      core.info(`${success}Audit message sent for review-queue PRs 🚀`);
+      core.info(`✅ Audit message sent for review-queue PRs 🚀`);
     } else {
       core.setFailed(
-        'Unable to send audit info for review-queue PRs: ' + result.error,
+        '❌ Unable to send audit info for review-queue PRs: ' + result.error,
       );
     }
   } else {
@@ -107,14 +104,14 @@ async function run() {
       });
 
       if (result.ok) {
-        core.info(`${success}Audit message sent for ${branch} 🚀`);
+        core.info(`✅ Audit message sent for ${branch} 🚀`);
       } else {
         core.setFailed(
-          `Unable to send audit info for ${branch}: ` + result.error,
+          `❌ Unable to send audit info for ${branch}: ` + result.error,
         );
       }
     }
-    core.info(`${success}All release branches audited successfully`);
+    core.info(` ✅ All release branches audited successfully`);
   }
 }
 
