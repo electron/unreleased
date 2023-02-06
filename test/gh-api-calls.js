@@ -6,14 +6,13 @@ const { fetchUnmergedPRs } = require('../utils/unmerged-prs');
 const { expect } = require('chai');
 
 const argOptions = {
-  withValue: ['branch', 'tag', 'author', 'prefix'],
+  withValue: ['branch', 'tag', 'author'],
 };
 
 const { argValues } = parseArgs(process.argv, argOptions);
 
 const branch = argValues?.branch || '17-x-y';
 const tag = argValues?.tag || 'v17.0.0';
-const prefix = argValues?.prefix || 'api-review';
 const author = argValues?.author || null;
 
 describe('API tests', () => {
