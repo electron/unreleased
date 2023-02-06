@@ -149,23 +149,6 @@ Example:
 /audit-pre-release 8-x-y
 ```
 
-### Check Review Queue
-
-List PRs that are pending review. Specifically, PRs in the repo that match the
-search `state:open "label:<prefix>/requested 🗳"`.
-
-```sh
-/review-queue <prefix>
-```
-
-where `prefix` is the beginning of the label to search for.
-
-Example:
-
-```sh
-/review-queue api-review
-```
-
 ## Environment Variables
 
 If you would like to use `unreleased`, there are several environment variables you will need to leverage to customize it to serve your needs.

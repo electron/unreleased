@@ -14,10 +14,6 @@ const {
   fetchNeedsManualPRs,
 } = require('./utils/needs-manual-prs');
 const {
-  buildReviewQueueMessage,
-  fetchReviewQueuePRs,
-} = require('./utils/review-queue-prs');
-const {
   fetchInitiator,
   getSemverForCommitRange,
   getSupportedBranches,
@@ -403,51 +399,6 @@ app.post('/audit-pre-release', async (req, res) => {
         message += `Unmerged pull requests targeting *${branch}*:\n`;
         message += `${buildUnmergedPRsMessage(branch, unmergedPRs)}\n`;
       }
-    }
-
-    postToSlack(
-      {
-        response_type: 'in_channel',
-        text: message,
-      },
-      req.body.response_url,
-    );
-  } catch (err) {
-    console.error(err);
-    postToSlack(
-      {
-        response_type: 'ephemeral',
-        text: `Error: ${err.message}`,
-      },
-      req.body.response_url,
-    );
-  }
-
-  return res.status(200).end();
-});
-
-// Check for pull requests which have the "${x}/requested 🗳" tag.
-app.post('/review-queue', async (req, res) => {
-  const [prefix] = req.body.text.split(' ');
-
-  const initiator = await fetchInitiator(req);
-  console.log(`${initiator.name} initiated review-queue for prefix: ${prefix}`);
-
-  try {
-    const prs = await fetchReviewQueuePRs(prefix);
-
-    console.log(
-      `Found ${prs.length} open PRs with label \`${prefix}/requested 🗳\``,
-    );
-
-    let message;
-    if (!prs || prs.length === 0) {
-      message = `*No open PRs with label \`${prefix}/requested 🗳\`*`;
-    } else {
-      message = `${prs.length} PR${
-        prs.length === 1 ? '' : 's'
-      } awaiting ${prefix} (from <@${initiator.id}>):\n`;
-      message += buildReviewQueueMessage(prefix, prs);
     }
 
     postToSlack(

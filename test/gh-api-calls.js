@@ -2,19 +2,17 @@ const { parseArgs } = require('@pkgjs/parseargs');
 const { fetchUnreleasedCommits } = require('../utils/unreleased-commits');
 const { getSemverForCommitRange, releaseIsDraft } = require('../utils/helpers');
 const { fetchNeedsManualPRs } = require('../utils/needs-manual-prs');
-const { fetchReviewQueuePRs } = require('../utils/review-queue-prs');
 const { fetchUnmergedPRs } = require('../utils/unmerged-prs');
 const { expect } = require('chai');
 
 const argOptions = {
-  withValue: ['branch', 'tag', 'author', 'prefix'],
+  withValue: ['branch', 'tag', 'author'],
 };
 
 const { argValues } = parseArgs(process.argv, argOptions);
 
 const branch = argValues?.branch || '17-x-y';
 const tag = argValues?.tag || 'v17.0.0';
-const prefix = argValues?.prefix || 'api-review';
 const author = argValues?.author || null;
 
 describe('API tests', () => {
@@ -37,11 +35,6 @@ describe('API tests', () => {
 
   it('can fetch PRs needing manual backport', async () => {
     const prs = await fetchNeedsManualPRs(branch, author);
-    expect(prs).to.be.an('array');
-  });
-
-  it('can fetch PRs needing API review', async () => {
-    const prs = await fetchReviewQueuePRs(prefix);
     expect(prs).to.be.an('array');
   });
 
