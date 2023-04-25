@@ -42,7 +42,7 @@
     "chai": "^4.2.0",
     "eslint": "^7.13.0",
     "husky": "^7.0.4",
-    "lint-staged": "^12.3.4",
+    "lint-staged": "^13.2.1",
     "mocha": "^10.2.0"
   },
   "lint-staged": {
