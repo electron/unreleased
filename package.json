@@ -26,8 +26,8 @@
   "homepage": "https://github.com/electron/unreleased#readme",
   "dependencies": {
     "@actions/core": "^1.10.0",
-    "@electron/github-app-auth": "^1.2.0",
-    "@octokit/rest": "^18.9.0",
+    "@electron/github-app-auth": "^2.0.0",
+    "@octokit/rest": "^19.0.11",
     "@pkgjs/parseargs": "^0.3.0",
     "@slack/web-api": "^5.15.0",
     "body-parser": "^1.18.3",
@@ -38,7 +38,7 @@
     "url": "^0.11.0"
   },
   "devDependencies": {
-    "@octokit/graphql": "^4.8.0",
+    "@octokit/graphql": "^5.0.6",
     "chai": "^4.2.0",
     "eslint": "^7.13.0",
     "husky": "^7.0.4",
