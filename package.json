@@ -1,6 +1,7 @@
 {
   "name": "unreleased",
   "version": "1.0.0",
+  "private": true,
   "description": "Checks for and reports commits unreleased for all currently supported branches.",
   "scripts": {
     "eslint:format": "eslint --fix '**/*.js'",
@@ -33,7 +34,6 @@
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "https": "^1.0.0",
-    "prettier": "^1.19.1",
     "queue": "^6.0.2",
     "url": "^0.11.0"
   },
@@ -43,7 +43,8 @@
     "eslint": "^7.13.0",
     "husky": "^7.0.4",
     "lint-staged": "^13.2.1",
-    "mocha": "^10.2.0"
+    "mocha": "^10.2.0",
+    "prettier": "^1.19.1"
   },
   "lint-staged": {
     "**/*.js": [
