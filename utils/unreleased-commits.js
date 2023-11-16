@@ -14,7 +14,20 @@ const {
 } = require('../constants');
 
 async function fetchTags() {
-  const creds = appCredentialsFromString(UNRELEASED_GITHUB_APP_CREDS);
+  let authorization;
+
+  if (UNRELEASED_GITHUB_APP_CREDS) {
+    const creds = appCredentialsFromString(UNRELEASED_GITHUB_APP_CREDS);
+    authorization = `token ${await getTokenForRepo(
+      {
+        owner: ORGANIZATION_NAME,
+        name: REPO_NAME,
+      },
+      creds,
+    )}`;
+  } else if (process.env.GITHUB_TOKEN) {
+    authorization = `token ${process.env.GITHUB_TOKEN}`;
+  }
 
   return graphql({
     query: `{
@@ -32,13 +45,7 @@ async function fetchTags() {
       }
     }`,
     headers: {
-      authorization: `token ${await getTokenForRepo(
-        {
-          owner: ORGANIZATION_NAME,
-          name: REPO_NAME,
-        },
-        creds,
-      )}`,
+      authorization,
     },
   }).then(({ repository }) => {
     return repository.refs.edges.map(edge => {
