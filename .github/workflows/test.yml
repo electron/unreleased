@@ -25,4 +25,6 @@ jobs:
         npm ci
         npm test
     - name: Test - GitHub API calls
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: npm run test:ghapi
