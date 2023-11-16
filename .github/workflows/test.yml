@@ -26,5 +26,5 @@ jobs:
         npm test
     - name: Test - GitHub API calls
       env:
-        UNRELEASED_GITHUB_APP_CREDS: ${{ secrets.UNRELEASED_GITHUB_APP_CREDS }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: npm run test:ghapi
