@@ -269,6 +269,40 @@ app.post('/needs-manual', async (req, res) => {
   return res.status(200).end();
 });
 
+app.get('/unreleased', async (req, res) => {
+  if (req.headers.authorization !== process.env.VERIFY_SEMVER_AUTH_HEADER) {
+    return res.status(401).end('Unauthorized');
+  }
+
+  const { branch } = req.query;
+
+  try {
+    const branches = await getSupportedBranches();
+    if (branch === 'all') {
+      const result = {};
+      for (const b of branches) {
+        const { commits } = await fetchUnreleasedCommits(b);
+        result[b] = commits;
+      }
+
+      return res.json(result);
+    } else {
+      if (isInvalidBranch(branches, branch)) {
+        return res
+          .status(400)
+          .json({ error: `${branch} is not a valid branch` });
+      }
+
+      const { commits } = await fetchUnreleasedCommits(branch);
+      return res.json({ [branch]: commits });
+    }
+  } catch (e) {
+    return res
+      .status(500)
+      .json({ error: `Failed to fetch unreleased for ${branch}` });
+  }
+});
+
 // Check for commits which have been merged to a release branch but
 // not been released in a beta or stable.
 app.post('/unreleased', async (req, res) => {
