@@ -278,14 +278,13 @@ app.get('/unreleased', async (req, res) => {
 
   try {
     const branches = await getSupportedBranches();
+    const result = {};
+
     if (branch === 'all') {
-      const result = {};
       for (const b of branches) {
         const { commits } = await fetchUnreleasedCommits(b);
         result[b] = commits;
       }
-
-      return res.json(result);
     } else {
       if (isInvalidBranch(branches, branch)) {
         return res
@@ -294,8 +293,10 @@ app.get('/unreleased', async (req, res) => {
       }
 
       const { commits } = await fetchUnreleasedCommits(branch);
-      return res.json({ [branch]: commits });
+      result[branch] = commits;
     }
+
+    return res.json(result);
   } catch (e) {
     return res
       .status(500)
