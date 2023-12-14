@@ -20,6 +20,7 @@ const {
   isInvalidBranch,
   postToSlack,
   SEMVER_TYPE,
+  timingSafeEqual,
 } = require('./utils/helpers');
 const { getOctokit } = require('./utils/octokit');
 
@@ -30,8 +31,14 @@ app.use(bodyParser.json());
 app.use(express.static('public'));
 
 app.get('/verify-semver', async (req, res) => {
-  if (req.headers.authorization !== process.env.VERIFY_SEMVER_AUTH_HEADER)
+  if (
+    !timingSafeEqual(
+      req.headers.authorization,
+      process.env.VERIFY_SEMVER_AUTH_HEADER,
+    )
+  ) {
     return res.status(401).end();
+  }
 
   const { branch } = req.query;
 
@@ -270,7 +277,12 @@ app.post('/needs-manual', async (req, res) => {
 });
 
 app.get('/unreleased', async (req, res) => {
-  if (req.headers.authorization !== process.env.VERIFY_SEMVER_AUTH_HEADER) {
+  if (
+    !timingSafeEqual(
+      req.headers.authorization,
+      process.env.VERIFY_SEMVER_AUTH_HEADER,
+    )
+  ) {
     return res.status(401).end('Unauthorized');
   }
 
