@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const https = require('https');
 const url = require('url');
 const { WebClient } = require('@slack/web-api');
@@ -149,6 +150,23 @@ const postToSlack = (data, postUrl) => {
   r.end(JSON.stringify(data));
 };
 
+// NOTE: This assumes `a` is a user-controlled string and
+// `b` is our sensitive value. This ensures that even in
+// length mismatch cases this function does a
+// crypto.timingSafeEqual comparison of `b.length`, so an
+// attacker can't change `a.length` to estimate `b.length`
+function timingSafeEqual(a, b) {
+  const bufferA = Buffer.from(a, 'utf-8');
+  const bufferB = Buffer.from(b, 'utf-8');
+
+  if (bufferA.length !== bufferB.length) {
+    crypto.timingSafeEqual(bufferB, bufferB);
+    return false;
+  }
+
+  return crypto.timingSafeEqual(bufferA, bufferB);
+}
+
 module.exports = {
   fetchInitiator,
   getSemverForCommitRange,
@@ -158,4 +176,5 @@ module.exports = {
   postToSlack,
   releaseIsDraft,
   SEMVER_TYPE,
+  timingSafeEqual,
 };
