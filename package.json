@@ -32,7 +32,7 @@
     "@pkgjs/parseargs": "^0.3.0",
     "@slack/web-api": "^6.10.0",
     "body-parser": "^1.18.3",
-    "express": "^4.16.4",
+    "express": "^4.19.2",
     "https": "^1.0.0",
     "queue": "^6.0.2",
     "url": "^0.11.0"
