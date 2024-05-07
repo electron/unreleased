@@ -15,6 +15,8 @@ const {
   SLACK_BOT_TOKEN,
   ACTION_TYPE,
   AUDIT_POST_CHANNEL,
+  MILLISECONDS_PER_DAY,
+  UNRELEASED_DAYS_WARN_THRESHOLD,
 } = require('./constants');
 
 const Actions = {
@@ -49,6 +51,14 @@ async function run() {
     let text = '';
     if (ACTION_TYPE === Actions.UNRELEASED) {
       text += buildUnreleasedCommitsMessage(branch, commits, initiatedBy);
+      const earliestCommit = commits[0];
+      const unreleasedDays = Math.floor(
+        (Date.now() - new Date(earliestCommit.committer.date).getTime()) /
+          MILLISECONDS_PER_DAY,
+      );
+      if (unreleasedDays > UNRELEASED_DAYS_WARN_THRESHOLD) {
+        text += `\n ⚠️ *There have been unreleased commits on \`${branch}\` for ${unreleasedDays} days!*`;
+      }
     } else if (ACTION_TYPE === Actions.NEEDS_MANUAL) {
       text += buildNeedsManualPRsMessage(
         branch,

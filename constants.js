@@ -16,6 +16,10 @@ const RELEASE_BRANCH_PATTERN = /^(\d)+-(?:(?:[0-9]+-x$)|(?:x+-y$))$/;
 
 const BUMP_COMMIT_PATTERN = /Bump v(\d)+.(\d)+.(\d)+(-(beta|nightly)(.\d+))?/;
 
+const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
+
+const UNRELEASED_DAYS_WARN_THRESHOLD = 8;
+
 module.exports = {
   ACTION_TYPE,
   AUDIT_POST_CHANNEL,
@@ -27,4 +31,6 @@ module.exports = {
   REPO_NAME,
   SLACK_BOT_TOKEN,
   UNRELEASED_GITHUB_APP_CREDS,
+  MILLISECONDS_PER_DAY,
+  UNRELEASED_DAYS_WARN_THRESHOLD,
 };
