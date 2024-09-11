@@ -4,9 +4,7 @@
   "scripts": {},
   "env": {},
   "formation": {},
-  "addons": [
-    "papertrail"
-  ],
+  "addons": [],
   "buildpacks": [
     {
       "url": "heroku/nodejs"
