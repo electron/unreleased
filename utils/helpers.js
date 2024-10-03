@@ -1,6 +1,5 @@
-const crypto = require('crypto');
-const https = require('https');
-const url = require('url');
+const crypto = require('node:crypto');
+
 const { WebClient } = require('@slack/web-api');
 
 const {
@@ -139,15 +138,14 @@ async function getSupportedBranches() {
 }
 
 // Post a message to a Slack workspace.
-const postToSlack = (data, postUrl) => {
-  const r = https.request({
-    ...url.parse(postUrl),
+const postToSlack = async (data, postUrl) => {
+  fetch(postUrl, {
+    body: JSON.stringify(data),
     method: 'POST',
     headers: {
       'content-type': 'application/json',
     },
   });
-  r.end(JSON.stringify(data));
 };
 
 // NOTE: This assumes `a` is a user-controlled string and

@@ -1,4 +1,6 @@
-const { expect } = require('chai');
+const assert = require('node:assert/strict');
+const { describe, it } = require('node:test');
+
 const {
   buildUnreleasedCommitsMessage,
 } = require('../utils/unreleased-commits');
@@ -15,6 +17,6 @@ describe('unmerged', () => {
 * \`<https://github.com/electron/electron/commit/7063ba73dfe8862e02d6b1a01b7742e52bac2515|7063ba73>\` fix: do not render inactive titlebar as active on Windows (<https://github.com/electron/electron/pull/24873|#24873>)
 * \`<https://github.com/electron/electron/commit/f01bb5f43b384527b7f1cdebfc4e5c1d067b9af6|f01bb5f4>\` fix: increase max crash key value length (<https://github.com/electron/electron/pull/24854|#24854>)`;
 
-    expect(message).to.equal(expected);
+    assert.strictEqual(message, expected);
   });
 });

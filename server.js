@@ -79,7 +79,7 @@ app.post('/verify-semver', async (req, res) => {
 
   if (isInvalidBranch(branches, branch)) {
     console.error(`${branch} is not a valid branch`);
-    postToSlack(
+    await postToSlack(
       {
         response_type: 'ephemeral',
         text: `Invalid branch *${branch}*. Try again?`,
@@ -98,7 +98,7 @@ app.post('/verify-semver', async (req, res) => {
       : await getSemverForCommitRange(commits, branch);
     console.info(`Determined that next release on ${branch} is ${semverType}`);
 
-    postToSlack(
+    await postToSlack(
       {
         response_type: 'in_channel',
         text: `Next release type for \`${branch}\` is: *${semverType}*`,
@@ -107,7 +107,7 @@ app.post('/verify-semver', async (req, res) => {
     );
   } catch (err) {
     console.error(err);
-    postToSlack(
+    await postToSlack(
       {
         response_type: 'ephemeral',
         text: `Error: ${err.message}`,
@@ -130,7 +130,7 @@ app.post('/unmerged', async (req, res) => {
 
   if (branch !== 'all' && isInvalidBranch(branches, branch)) {
     console.error(`${branch} is not a valid branch`);
-    postToSlack(
+    await postToSlack(
       {
         response_type: 'ephemeral',
         text: `Invalid branch *${branch}*. Try again?`,
@@ -160,7 +160,7 @@ app.post('/unmerged', async (req, res) => {
       messages.push(message);
     }
 
-    postToSlack(
+    await postToSlack(
       {
         response_type: 'in_channel',
         text: messages.join('\n'),
@@ -169,7 +169,7 @@ app.post('/unmerged', async (req, res) => {
     );
   } catch (err) {
     console.error(err);
-    postToSlack(
+    await postToSlack(
       {
         response_type: 'ephemeral',
         text: `Error: ${err.message}`,
@@ -204,7 +204,7 @@ app.post('/needs-manual', async (req, res) => {
 
   if (branch !== 'all' && isInvalidBranch(branches, branch)) {
     console.error(`${branch} is not a valid branch`);
-    postToSlack(
+    await postToSlack(
       {
         response_type: 'ephemeral',
         text: `Invalid branch *${branch}*. Try again?`,
@@ -220,7 +220,7 @@ app.post('/needs-manual', async (req, res) => {
       await octokit.users.getByUsername({ username: author });
     } catch {
       console.error(`${author} is not a valid GitHub user`);
-      postToSlack(
+      await postToSlack(
         {
           response_type: 'ephemeral',
           text: `GitHub user *${author}* does not exist. Try again?`,
@@ -255,7 +255,7 @@ app.post('/needs-manual', async (req, res) => {
     // they are responsible for, make the response ephemeral.
     const responseType = initiator.name === author ? 'ephemeral' : 'in_channel';
 
-    postToSlack(
+    await postToSlack(
       {
         response_type: responseType,
         text: messages.join('\n'),
@@ -264,7 +264,7 @@ app.post('/needs-manual', async (req, res) => {
     );
   } catch (err) {
     console.error(err);
-    postToSlack(
+    await postToSlack(
       {
         response_type: 'ephemeral',
         text: `Error: ${err.message}`,
@@ -335,7 +335,7 @@ app.post('/unreleased', async (req, res) => {
       try {
         const { commits } = await fetchUnreleasedCommits(b);
         console.log(`Found ${commits.length} commits on ${b}`);
-        postToSlack(
+        await postToSlack(
           {
             response_type: 'in_channel',
             text: buildUnreleasedCommitsMessage(b, commits, initiator.id),
@@ -344,7 +344,7 @@ app.post('/unreleased', async (req, res) => {
         );
       } catch (err) {
         console.error(err);
-        postToSlack(
+        await postToSlack(
           {
             response_type: 'ephemeral',
             text: `Error: ${err.message}`,
@@ -363,7 +363,7 @@ app.post('/unreleased', async (req, res) => {
 
   if (isInvalidBranch(branches, branch)) {
     console.error(`${branch} is not a valid branch`);
-    postToSlack(
+    await postToSlack(
       {
         response_type: 'ephemeral',
         text: `Invalid branch *${branch}*. Try again?`,
@@ -377,7 +377,7 @@ app.post('/unreleased', async (req, res) => {
     const { commits } = await fetchUnreleasedCommits(branch);
     console.log(`Found ${commits.length} commits on ${branch}`);
 
-    postToSlack(
+    await postToSlack(
       {
         response_type: 'in_channel',
         text: buildUnreleasedCommitsMessage(branch, commits, initiator.id),
@@ -386,7 +386,7 @@ app.post('/unreleased', async (req, res) => {
     );
   } catch (err) {
     console.error(err);
-    postToSlack(
+    await postToSlack(
       {
         response_type: 'ephemeral',
         text: `Error: ${err.message}`,
@@ -411,7 +411,7 @@ app.post('/audit-pre-release', async (req, res) => {
 
   if (isInvalidBranch(branches, branch)) {
     console.error(`${branch} is not a valid branch`);
-    postToSlack(
+    await postToSlack(
       {
         response_type: 'ephemeral',
         text: `Invalid branch *${branch}*. Try again?`,
@@ -448,7 +448,7 @@ app.post('/audit-pre-release', async (req, res) => {
       }
     }
 
-    postToSlack(
+    await postToSlack(
       {
         response_type: 'in_channel',
         text: message,
@@ -457,7 +457,7 @@ app.post('/audit-pre-release', async (req, res) => {
     );
   } catch (err) {
     console.error(err);
-    postToSlack(
+    await postToSlack(
       {
         response_type: 'ephemeral',
         text: `Error: ${err.message}`,
