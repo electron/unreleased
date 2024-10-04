@@ -139,7 +139,7 @@ async function getSupportedBranches() {
 
 // Post a message to a Slack workspace.
 const postToSlack = async (data, postUrl) => {
-  fetch(postUrl, {
+  await fetch(postUrl, {
     body: JSON.stringify(data),
     method: 'POST',
     headers: {
