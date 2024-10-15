@@ -7,7 +7,6 @@ const {
 } = require('@electron/github-app-auth');
 
 const {
-  BUMP_COMMIT_PATTERN,
   ORGANIZATION_NAME,
   REPO_NAME,
   UNRELEASED_GITHUB_APP_CREDS,
@@ -87,9 +86,6 @@ async function fetchUnreleasedCommits(branch) {
             break;
           }
         }
-
-        // Filter out bump commits.
-        if (BUMP_COMMIT_PATTERN.test(payload.commit.message)) continue;
 
         unreleased.push(payload);
       }
