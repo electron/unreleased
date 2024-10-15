@@ -48,7 +48,7 @@ async function fetchTags() {
       authorization,
     },
   }).then(({ repository }) => {
-    return repository.refs.edges.map(edge => {
+    return repository.refs.edges.map((edge) => {
       const url = edge.node.target.commitUrl.split('/');
       return {
         name: edge.node.name,
@@ -78,7 +78,7 @@ async function fetchUnreleasedCommits(branch) {
     )) {
       let foundLastRelease = false;
       for (const payload of response.data) {
-        const tag = tags.find(t => t.commit_sha === payload.sha);
+        const tag = tags.find((t) => t.commit_sha === payload.sha);
         if (tag) {
           const isDraft = await releaseIsDraft(tag.name);
           if (!isDraft) {
@@ -108,7 +108,7 @@ function buildUnreleasedCommitsMessage(branch, commits, initiator) {
     return `*No unreleased commits on ${branch}*`;
 
   const formattedCommits = commits
-    .map(c => {
+    .map((c) => {
       const prLink = linkifyPRs(c.commit.message.split(/[\r\n]/, 1)[0]);
       return `* \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${prLink}`;
     })

@@ -6,15 +6,15 @@ const {
   REPO_NAME,
 } = require('../constants');
 
-const formatMessage = pr => {
+const formatMessage = (pr) => {
   return `* <${pr.html_url}|#${pr.number}>${pr.draft ? ' (*DRAFT*)' : ''} - ${
     pr.title.split(/[\r\n]/, 1)[0]
   }`;
 };
 
 function getReleaseBlockers(prs) {
-  return prs.filter(pr => {
-    return pr.labels.some(label => label.name === BLOCKS_RELEASE_LABEL);
+  return prs.filter((pr) => {
+    return pr.labels.some((label) => label.name === BLOCKS_RELEASE_LABEL);
   });
 }
 

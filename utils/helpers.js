@@ -35,15 +35,15 @@ async function getSemverForCommitRange(commits, branch) {
   });
 
   for (const commit of commits) {
-    const prs = allClosedPrs.filter(pr => pr.merge_commit_sha === commit.sha);
+    const prs = allClosedPrs.filter((pr) => pr.merge_commit_sha === commit.sha);
     if (prs.length > 0) {
       if (prs.length === 1) {
         const pr = prs[0];
         const isMajor = pr.labels.some(
-          label => label.name === SEMVER_TYPE.MAJOR,
+          (label) => label.name === SEMVER_TYPE.MAJOR,
         );
         const isMinor = pr.labels.some(
-          label => label.name === SEMVER_TYPE.MINOR,
+          (label) => label.name === SEMVER_TYPE.MINOR,
         );
         if (isMajor) {
           resultantSemver = SEMVER_TYPE.MAJOR;
@@ -112,7 +112,7 @@ async function getSupportedBranches() {
     }),
   );
 
-  const releaseBranches = branches.filter(branch => {
+  const releaseBranches = branches.filter((branch) => {
     return branch.name.match(RELEASE_BRANCH_PATTERN);
   });
 
@@ -127,7 +127,7 @@ async function getSupportedBranches() {
       }
       return 0;
     })
-    .forEach(branch => {
+    .forEach((branch) => {
       return (filtered[branch.name.split('-')[0]] = branch.name);
     });
 

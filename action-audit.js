@@ -86,6 +86,6 @@ async function run() {
   core.info(` ✅ All release branches audited successfully`);
 }
 
-run().catch(e => {
+run().catch((e) => {
   core.setFailed(`Workflow failed: ${e.message}`);
 });
