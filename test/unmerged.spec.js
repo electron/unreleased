@@ -1,4 +1,6 @@
-const { expect } = require('chai');
+const assert = require('node:assert/strict');
+const { describe, it } = require('node:test');
+
 const { buildUnmergedPRsMessage } = require('../utils/unmerged-prs');
 
 describe('unmerged', () => {
@@ -12,6 +14,6 @@ describe('unmerged', () => {
 * <https://github.com/electron/electron/pull/20625|#20625> (*DRAFT*) - fix: loading dedicated/shared worker scripts over custom protocol
  *3 unmerged PR(s) targeting \`10-x-y\`!*`;
 
-    expect(message).to.equal(expected);
+    assert.strictEqual(message, expected);
   });
 });

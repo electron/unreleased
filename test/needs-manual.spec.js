@@ -1,4 +1,6 @@
-const { expect } = require('chai');
+const assert = require('node:assert/strict');
+const { describe, it } = require('node:test');
+
 const { buildNeedsManualPRsMessage } = require('../utils/needs-manual-prs');
 
 describe('needs manual', () => {
@@ -18,7 +20,7 @@ describe('needs manual', () => {
 * <https://github.com/electron/electron/pull/20625|#20625> - fix: loading dedicated/shared worker scripts over custom protocol
  *5 PR(s) needing manual backport to \`8-x-y\`!*`;
 
-    expect(message).to.equal(expected);
+    assert.strictEqual(message, expected);
   });
 
   it('can build the needs-manual PRs message with remind', () => {
@@ -37,6 +39,6 @@ describe('needs manual', () => {
 * <https://github.com/electron/electron/pull/20625|#20625> - fix: loading dedicated/shared worker scripts over custom protocol (<@deepak1556>)
  *5 PR(s) needing manual backport to \`8-x-y\`!*`;
 
-    expect(message).to.equal(expected);
+    assert.strictEqual(message, expected);
   });
 });
