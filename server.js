@@ -309,7 +309,7 @@ app.get('/unreleased', async (req, res) => {
     }
 
     return res.json(result);
-  } catch (e) {
+  } catch {
     return res
       .status(500)
       .json({ error: `Failed to fetch unreleased for ${branch}` });
