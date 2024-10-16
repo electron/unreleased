@@ -14,6 +14,8 @@ const AUDIT_POST_CHANNEL = process.env.AUDIT_POST_CHANNEL || '#wg-releases';
 
 const RELEASE_BRANCH_PATTERN = /^(\d)+-(?:(?:[0-9]+-x$)|(?:x+-y$))$/;
 
+const EXCLUDED_COMMIT_PATTERN = /^(?:build|ci|test)(?:\(\w+\))?:/;
+
 const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
 
 const UNRELEASED_DAYS_WARN_THRESHOLD = 8;
@@ -22,6 +24,7 @@ module.exports = {
   ACTION_TYPE,
   AUDIT_POST_CHANNEL,
   BLOCKS_RELEASE_LABEL,
+  EXCLUDED_COMMIT_PATTERN,
   NUM_SUPPORTED_VERSIONS,
   ORGANIZATION_NAME,
   RELEASE_BRANCH_PATTERN,
