@@ -7,6 +7,7 @@ const {
 } = require('@electron/github-app-auth');
 
 const {
+  EXCLUDED_COMMIT_PATTERN,
   ORGANIZATION_NAME,
   REPO_NAME,
   UNRELEASED_GITHUB_APP_CREDS,
@@ -86,6 +87,9 @@ async function fetchUnreleasedCommits(branch) {
             break;
           }
         }
+
+        // Filter out commits that aren't releasable on their own.
+        if (EXCLUDED_COMMIT_PATTERN.test(payload.commit.message)) continue;
 
         unreleased.push(payload);
       }

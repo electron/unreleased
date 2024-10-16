@@ -5,8 +5,8 @@ const {
   buildUnreleasedCommitsMessage,
 } = require('../utils/unreleased-commits');
 
-describe('unmerged', () => {
-  it('can build the unmerged PRs message', () => {
+describe('unreleased', () => {
+  it('can build the unreleased PRs message', () => {
     const commits = require('./fixtures/unreleased-commits.json');
     const branch = '9-x-y';
     const initiator = 'codebytere';
