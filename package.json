@@ -30,14 +30,14 @@
   "homepage": "https://github.com/electron/unreleased#readme",
   "dependencies": {
     "@actions/core": "^1.10.0",
-    "@electron/github-app-auth": "^2.0.0",
-    "@octokit/rest": "^19.0.11",
+    "@electron/github-app-auth": "^3.0.0",
+    "@octokit/rest": "^21.1.1",
     "@slack/web-api": "^6.10.0",
     "body-parser": "^1.18.3",
     "express": "^5.0.1"
   },
   "devDependencies": {
-    "@octokit/graphql": "^5.0.6",
+    "@octokit/graphql": "^8.2.1",
     "eslint": "^9.12.0",
     "globals": "^15.11.0",
     "husky": "^9.1.6",
