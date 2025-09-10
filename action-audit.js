@@ -51,7 +51,7 @@ async function run() {
     let text = '';
     if (ACTION_TYPE === Actions.UNRELEASED) {
       text += buildUnreleasedCommitsMessage(branch, commits, initiatedBy);
-      const earliestCommit = commits[0];
+      const earliestCommit = commits.at(-1);
       if (earliestCommit !== undefined) {
         const unreleasedDays = Math.floor(
           (Date.now() - new Date(earliestCommit.committer.date).getTime()) /
