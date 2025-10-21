@@ -16,7 +16,7 @@ jobs:
       with:
         node-version: lts/*
     - name: Install Dependencies
-      run: npm install
+      run: yarn install --immutable
     - name: Check PRs Needing Manual Backport
       run: node action-audit.js
       env:

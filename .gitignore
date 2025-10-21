@@ -1,3 +1,5 @@
 node_modules
 .envrc
 yarn.lock
+.yarn/install-state.gz
+.yarn/install-state.gz
