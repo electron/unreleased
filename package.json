@@ -12,7 +12,7 @@
     "prettier:format": "prettier --write '**/*.js'",
     "prettier:lint": "prettier --check '**/*.js'",
     "start": "node server.js",
-    "test": "node --test **/*.spec.js",
+    "test": "node --test test/**/*.spec.js",
     "test:ghapi": "node --test test/gh-api-calls.js"
   },
   "engines": {
