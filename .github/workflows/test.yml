@@ -22,9 +22,9 @@ jobs:
         node-version: 20.x
     - name: Test - Unit Tests
       run: |
-        npm ci
-        npm test
+        yarn install --immutable
+        yarn test
     - name: Test - GitHub API calls
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: npm run test:ghapi
+      run: yarn test:ghapi

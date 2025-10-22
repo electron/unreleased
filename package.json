@@ -6,13 +6,13 @@
   "scripts": {
     "eslint:format": "eslint --fix '**/*.js'",
     "eslint:lint": "eslint '**/*.js'",
-    "lint": "npm run prettier:lint && npm run eslint:lint",
+    "lint": "yarn prettier:lint && yarn eslint:lint",
     "lint-staged": "lint-staged",
     "prepare": "husky",
     "prettier:format": "prettier --write '**/*.js'",
     "prettier:lint": "prettier --check '**/*.js'",
     "start": "node server.js",
-    "test": "node --test **/*.spec.js",
+    "test": "node --test test/**/*.spec.js",
     "test:ghapi": "node --test test/gh-api-calls.js"
   },
   "engines": {
@@ -49,5 +49,6 @@
       "eslint --fix",
       "prettier --write"
     ]
-  }
+  },
+  "packageManager": "yarn@4.10.3+sha512.c38cafb5c7bb273f3926d04e55e1d8c9dfa7d9c3ea1f36a4868fa028b9e5f72298f0b7f401ad5eb921749eb012eb1c3bb74bf7503df3ee43fd600d14a018266f"
 }
