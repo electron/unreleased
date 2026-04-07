@@ -1,10 +1,5 @@
 const { linkifyPRs, releaseIsDraft } = require('./helpers');
 const { getOctokit } = require('./octokit');
-const { graphql } = require('@octokit/graphql');
-const {
-  appCredentialsFromString,
-  getTokenForRepo,
-} = require('@electron/github-app-auth');
 
 const {
   EXCLUDED_COMMIT_PATTERN,
@@ -14,9 +9,14 @@ const {
 } = require('../constants');
 
 async function fetchTags() {
+  const { graphql } = await import('@octokit/graphql');
+
   let authorization;
 
   if (UNRELEASED_GITHUB_APP_CREDS) {
+    const { appCredentialsFromString, getTokenForRepo } = await import(
+      '@electron/github-app-auth'
+    );
     const creds = appCredentialsFromString(UNRELEASED_GITHUB_APP_CREDS);
     authorization = `token ${await getTokenForRepo(
       {
