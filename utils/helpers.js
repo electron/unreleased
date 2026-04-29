@@ -27,15 +27,23 @@ const isInvalidBranch = (branches, branch) => {
 async function getSemverForCommitRange(commits, branch) {
   let resultantSemver = SEMVER_TYPE.PATCH;
   const octokit = await getOctokit();
-  const allClosedPrs = await octokit.paginate(octokit.pulls.list, {
-    owner: ORGANIZATION_NAME,
-    repo: REPO_NAME,
-    state: 'closed',
-    base: branch,
-  });
 
-  for (const commit of commits) {
-    const prs = allClosedPrs.filter((pr) => pr.merge_commit_sha === commit.sha);
+  const results = await Promise.all(
+    commits.map((commit) =>
+      octokit.repos
+        .listPullRequestsAssociatedWithCommit({
+          owner: ORGANIZATION_NAME,
+          repo: REPO_NAME,
+          commit_sha: commit.sha,
+        })
+        .then(({ data }) => ({ commit, data })),
+    ),
+  );
+
+  for (const { commit, data } of results) {
+    const prs = data.filter(
+      (pr) => pr.base.ref === branch && pr.merge_commit_sha === commit.sha,
+    );
     if (prs.length > 0) {
       if (prs.length === 1) {
         const pr = prs[0];
@@ -47,7 +55,7 @@ async function getSemverForCommitRange(commits, branch) {
         );
         if (isMajor) {
           resultantSemver = SEMVER_TYPE.MAJOR;
-        } else if (isMinor) {
+        } else if (isMinor && resultantSemver !== SEMVER_TYPE.MAJOR) {
           resultantSemver = SEMVER_TYPE.MINOR;
         }
       } else {
@@ -109,6 +117,7 @@ async function getSupportedBranches() {
       owner: ORGANIZATION_NAME,
       repo: REPO_NAME,
       protected: true,
+      per_page: 100,
     }),
   );
 
