@@ -15,8 +15,8 @@ const argOptions = {
 
 const { values: argValues } = parseArgs({ options: argOptions });
 
-const branch = argValues?.branch || '17-x-y';
-const tag = argValues?.tag || 'v17.0.0';
+const branch = argValues?.branch || '40-x-y';
+const tag = argValues?.tag || 'v40.0.0';
 const author = argValues?.author || null;
 
 describe('API tests', () => {
