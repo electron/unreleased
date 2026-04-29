@@ -21,8 +21,9 @@ const author = argValues?.author || null;
 
 describe('API tests', () => {
   it('can fetch unreleased commits', async () => {
-    const { commits } = await fetchUnreleasedCommits(branch);
+    const { commits, lastTag } = await fetchUnreleasedCommits(branch);
     assert.ok(Array.isArray(commits));
+    assert.notStrictEqual(lastTag, null);
   });
 
   it('can get the semver value for a commit range', async () => {

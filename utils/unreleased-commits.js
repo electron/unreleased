@@ -8,7 +8,7 @@ const {
   UNRELEASED_GITHUB_APP_CREDS,
 } = require('../constants');
 
-async function fetchTags() {
+async function fetchTags(branch) {
   const { graphql } = await import('@octokit/graphql');
 
   let authorization;
@@ -29,10 +29,14 @@ async function fetchTags() {
     authorization = `token ${process.env.GITHUB_TOKEN}`;
   }
 
+  // Restrict the tag search to the branch's major version (e.g. "v28." for "28-x-y")
+  const major = branch?.match(/^(\d+)-/)?.[1];
+  const tagQuery = major ? `v${major}.` : '';
+
   return graphql({
-    query: `{
+    query: `query($tagQuery: String!) {
       repository(owner: "electron", name: "electron") {
-        refs(refPrefix: "refs/tags/", first: 100, orderBy: { field: TAG_COMMIT_DATE, direction: DESC }) {
+        refs(refPrefix: "refs/tags/", first: 100, query: $tagQuery, orderBy: { field: TAG_COMMIT_DATE, direction: DESC }) {
           edges {
             node {
               name
@@ -44,6 +48,7 @@ async function fetchTags() {
         }
       }
     }`,
+    tagQuery,
     headers: {
       authorization,
     },
@@ -61,7 +66,7 @@ async function fetchTags() {
 
 // Fetch all unreleased commits for a specified release line branch.
 async function fetchUnreleasedCommits(branch) {
-  const tags = await fetchTags();
+  const tags = await fetchTags(branch);
   const unreleased = [];
   let lastTag = null;
 
