@@ -28,17 +28,22 @@ async function getSemverForCommitRange(commits, branch) {
   let resultantSemver = SEMVER_TYPE.PATCH;
   const octokit = await getOctokit();
 
-  const results = await Promise.all(
-    commits.map((commit) =>
-      octokit.repos
-        .listPullRequestsAssociatedWithCommit({
-          owner: ORGANIZATION_NAME,
-          repo: REPO_NAME,
-          commit_sha: commit.sha,
-        })
-        .then(({ data }) => ({ commit, data })),
-    ),
-  );
+  const CONCURRENCY = 20;
+  const results = [];
+  for (let i = 0; i < commits.length; i += CONCURRENCY) {
+    const batch = await Promise.all(
+      commits.slice(i, i + CONCURRENCY).map((commit) =>
+        octokit.repos
+          .listPullRequestsAssociatedWithCommit({
+            owner: ORGANIZATION_NAME,
+            repo: REPO_NAME,
+            commit_sha: commit.sha,
+          })
+          .then(({ data }) => ({ commit, data })),
+      ),
+    );
+    results.push(...batch);
+  }
 
   for (const { commit, data } of results) {
     const prs = data.filter(
