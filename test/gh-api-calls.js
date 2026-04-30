@@ -3,7 +3,11 @@ const { describe, it } = require('node:test');
 const { parseArgs } = require('node:util');
 
 const { fetchUnreleasedCommits } = require('../utils/unreleased-commits');
-const { getSemverForCommitRange, releaseIsDraft } = require('../utils/helpers');
+const {
+  getSemverForCommitRange,
+  getSupportedBranches,
+  releaseIsDraft,
+} = require('../utils/helpers');
 const { fetchNeedsManualPRs } = require('../utils/needs-manual-prs');
 const { fetchUnmergedPRs } = require('../utils/unmerged-prs');
 
@@ -46,5 +50,11 @@ describe('API tests', () => {
   it('can fetch PRs needing merge', async () => {
     const prs = await fetchUnmergedPRs(branch);
     assert.ok(Array.isArray(prs));
+  });
+
+  it('can get supported branches', async () => {
+    const branches = await getSupportedBranches();
+    assert.ok(Array.isArray(branches));
+    assert.notStrictEqual(branches.length, 0);
   });
 });

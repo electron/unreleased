@@ -18,8 +18,6 @@ An unreleased commit audit is triggered automatically via cron job on Monday mor
 
 This tool will default to setting the organization and repository name to [`electron/electron`](https://github.com/electron/electron), but you can set your own by setting `ORGANIZATION_NAME` and `REPO_NAME` as environment variables.
 
-You can also set the number of currently supported release lines with the `NUM_SUPPORTED_VERSIONS` env var.
-
 ### Check Unreleased
 
 An unreleased commit audit can be triggered via Slack using the following:
@@ -155,7 +153,6 @@ If you would like to use `unreleased`, there are several environment variables y
 
 * `ORGANIZATION_NAME` - the name of your organization, e.g. `electron`.
 * `REPO_NAME` - the name of the repository to run audits in, e.g. `electron`.
-* `NUM_SUPPORTED_VERSIONS` - the number of supported backport release lines (default is 4).
 * `UNRELEASED_GITHUB_APP_CREDS` - private key credentials generated for a GitHub App (required).
 * `SLACK_BOT_TOKEN` - the token that will be used to post audit result into a Slack workspace channel (required).
 * `BLOCKS_RELEASE_LABEL` - the GitHub label used to denote unmerged pull requests that should block a release (default is `blocks-release`).

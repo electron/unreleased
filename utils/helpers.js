@@ -5,7 +5,6 @@ const { WebClient } = require('@slack/web-api');
 const {
   ORGANIZATION_NAME,
   REPO_NAME,
-  NUM_SUPPORTED_VERSIONS,
   RELEASE_BRANCH_PATTERN,
   SLACK_BOT_TOKEN,
 } = require('../constants');
@@ -110,40 +109,17 @@ async function releaseIsDraft(tag) {
 
 // Fetch an array of the currently supported branches.
 async function getSupportedBranches() {
-  const octokit = await getOctokit();
+  const resp = await fetch('https://releases.electronjs.org/schedule.json');
+  if (!resp.ok) {
+    throw new Error(
+      `Failed to fetch supported branches: ${resp.status} ${resp.statusText}`,
+    );
+  }
+  const schedule = await resp.json();
 
-  const branches = await octokit.paginate(
-    octokit.repos.listBranches.endpoint.merge({
-      owner: ORGANIZATION_NAME,
-      repo: REPO_NAME,
-      protected: true,
-      per_page: 100,
-    }),
-  );
-
-  const releaseBranches = branches.filter((branch) => {
-    return branch.name.match(RELEASE_BRANCH_PATTERN);
-  });
-
-  const filtered = {};
-  releaseBranches
-    .sort((a, b) => {
-      const aParts = a.name.split('-');
-      const bParts = b.name.split('-');
-      for (let i = 0; i < aParts.length; i++) {
-        if (aParts[i] === bParts[i]) continue;
-        return parseInt(aParts[i], 10) - parseInt(bParts[i], 10);
-      }
-      return 0;
-    })
-    .forEach((branch) => {
-      return (filtered[branch.name.split('-')[0]] = branch.name);
-    });
-
-  const values = Object.values(filtered);
-  return values
-    .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
-    .slice(-NUM_SUPPORTED_VERSIONS);
+  return Object.values(schedule)
+    .filter(({ status }) => ['prerelease', 'stable'].includes(status))
+    .map(({ branch }) => branch);
 }
 
 // Post a message to a Slack workspace.
