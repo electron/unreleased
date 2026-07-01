@@ -107,21 +107,78 @@ async function releaseIsDraft(tag) {
   }
 }
 
-// Fetch an array of the currently supported branches.
-async function getSupportedBranches() {
-  const resp = await fetch(
-    'https://releases.electronjs.org/schedule.json?eolGracePeriod=7',
-  );
+async function fetchSchedule() {
+  const resp = await fetch('https://releases.electronjs.org/schedule.json');
   if (!resp.ok) {
     throw new Error(
-      `Failed to fetch supported branches: ${resp.status} ${resp.statusText}`,
+      `Failed to fetch release branches: ${resp.status} ${resp.statusText}`,
     );
   }
   const schedule = await resp.json();
+  return Object.values(schedule);
+}
 
-  return Object.values(schedule)
+async function branchExists(branch) {
+  const octokit = await getOctokit();
+
+  try {
+    await octokit.rest.repos.getBranch({
+      owner: ORGANIZATION_NAME,
+      repo: REPO_NAME,
+      branch,
+    });
+  } catch (err) {
+    // A 404 means the branch genuinely doesn't exist
+    if (err.status === 404) {
+      return false;
+    }
+    throw err;
+  }
+
+  return true;
+}
+
+async function checkForNewReleaseBranch(latestVersion) {
+  const latestMajor = latestVersion.split('.')[0];
+  const nextMajorBranch = `${latestMajor}-x-y`;
+
+  if (await branchExists(nextMajorBranch)) {
+    return nextMajorBranch;
+  }
+
+  return null;
+}
+
+// Fetch an array of the currently supported branches.
+async function getSupportedBranches() {
+  const schedule = await fetchSchedule();
+  const branches = schedule
     .filter(({ status }) => ['prerelease', 'stable'].includes(status))
     .map(({ branch }) => branch);
+
+  // Schedule is cached, so check GH for a new release branch
+  const newReleaseBranch = await checkForNewReleaseBranch(schedule[0].version);
+  if (newReleaseBranch) {
+    branches.unshift(newReleaseBranch);
+    branches.pop(); // Knock out the last stable branch if we have a new release branch
+  }
+
+  return branches;
+}
+
+// Fetch an array of newest N release branches
+async function getReleaseBranches(n = 10) {
+  const schedule = await fetchSchedule();
+  const branches = schedule.slice(0, n).map(({ branch }) => branch);
+
+  // Schedule is cached, so check GH for a new release branch
+  const newReleaseBranch = await checkForNewReleaseBranch(schedule[0].version);
+  if (newReleaseBranch) {
+    branches.splice(1, 0, newReleaseBranch);
+    branches.pop();
+  }
+
+  return branches;
 }
 
 // Post a message to a Slack workspace.
@@ -154,6 +211,7 @@ function timingSafeEqual(a, b) {
 
 module.exports = {
   fetchInitiator,
+  getReleaseBranches,
   getSemverForCommitRange,
   getSupportedBranches,
   isInvalidBranch,

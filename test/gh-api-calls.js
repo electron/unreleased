@@ -4,6 +4,7 @@ const { parseArgs } = require('node:util');
 
 const { fetchUnreleasedCommits } = require('../utils/unreleased-commits');
 const {
+  getReleaseBranches,
   getSemverForCommitRange,
   getSupportedBranches,
   releaseIsDraft,
@@ -50,6 +51,18 @@ describe('API tests', () => {
   it('can fetch PRs needing merge', async () => {
     const prs = await fetchUnmergedPRs(branch);
     assert.ok(Array.isArray(prs));
+  });
+
+  it('can get release branches', async () => {
+    const branches = await getReleaseBranches();
+    assert.ok(Array.isArray(branches));
+    assert.strictEqual(branches.length, 10);
+  });
+
+  it('can get more release branches', async () => {
+    const branches = await getReleaseBranches(15);
+    assert.ok(Array.isArray(branches));
+    assert.strictEqual(branches.length, 15);
   });
 
   it('can get supported branches', async () => {
