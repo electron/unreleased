@@ -109,9 +109,7 @@ async function releaseIsDraft(tag) {
 
 // Fetch an array of the currently supported branches.
 async function getSupportedBranches() {
-  const resp = await fetch(
-    'https://releases.electronjs.org/schedule.json?eolGracePeriod=7',
-  );
+  const resp = await fetch('https://releases.electronjs.org/schedule.json');
   if (!resp.ok) {
     throw new Error(
       `Failed to fetch supported branches: ${resp.status} ${resp.statusText}`,
