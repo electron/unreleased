@@ -107,19 +107,29 @@ async function releaseIsDraft(tag) {
   }
 }
 
-// Fetch an array of the currently supported branches.
-async function getSupportedBranches() {
+async function fetchSchedule() {
   const resp = await fetch('https://releases.electronjs.org/schedule.json');
   if (!resp.ok) {
     throw new Error(
-      `Failed to fetch supported branches: ${resp.status} ${resp.statusText}`,
+      `Failed to fetch release branches: ${resp.status} ${resp.statusText}`,
     );
   }
   const schedule = await resp.json();
+  return Object.values(schedule);
+}
 
-  return Object.values(schedule)
+// Fetch an array of the currently supported branches.
+async function getSupportedBranches() {
+  const schedule = await fetchSchedule();
+  return schedule
     .filter(({ status }) => ['prerelease', 'stable'].includes(status))
     .map(({ branch }) => branch);
+}
+
+// Fetch an array of newest N release branches
+async function getReleaseBranches(n = 10) {
+  const schedule = await fetchSchedule();
+  return schedule.slice(0, n).map(({ branch }) => branch);
 }
 
 // Post a message to a Slack workspace.
@@ -152,6 +162,7 @@ function timingSafeEqual(a, b) {
 
 module.exports = {
   fetchInitiator,
+  getReleaseBranches,
   getSemverForCommitRange,
   getSupportedBranches,
   isInvalidBranch,
