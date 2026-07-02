@@ -70,6 +70,20 @@ async function getSemverForCommitRange(commits, branch) {
   return resultantSemver;
 }
 
+// Escape Slack mrkdwn control characters in untrusted, GitHub-sourced text
+// (PR titles, commit messages, usernames) before it is interpolated into a
+// Slack message. Slack renders posted text as mrkdwn, so an attacker-supplied
+// value could otherwise inject deceptive links (`<url|label>`), broadcast
+// pings (`<!channel>`/`<!here>`), or other active markup. Escaping `&`, `<`
+// and `>` neutralizes all of these while leaving ordinary text intact.
+// See https://docs.slack.dev/messaging/formatting-message-text#escaping
+function escapeSlackText(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 // Add a live PR link to a given commit.
 function linkifyPRs(msg) {
   return msg.replace(
@@ -199,6 +213,7 @@ function verifySlackRequest(req, res, next) {
 }
 
 module.exports = {
+  escapeSlackText,
   fetchInitiator,
   getSemverForCommitRange,
   getSupportedBranches,

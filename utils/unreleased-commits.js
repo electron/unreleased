@@ -1,4 +1,4 @@
-const { linkifyPRs, releaseIsDraft } = require('./helpers');
+const { escapeSlackText, linkifyPRs, releaseIsDraft } = require('./helpers');
 const { getOctokit } = require('./octokit');
 
 const {
@@ -114,7 +114,11 @@ function buildUnreleasedCommitsMessage(branch, commits, initiator) {
 
   const formattedCommits = commits
     .map((c) => {
-      const prLink = linkifyPRs(c.commit.message.split(/[\r\n]/, 1)[0]);
+      // Escape Slack control characters in the untrusted commit message
+      // before linkifyPRs adds its own (trusted) `<url|#nnn>` markup.
+      const prLink = linkifyPRs(
+        escapeSlackText(c.commit.message.split(/[\r\n]/, 1)[0]),
+      );
       return `* \`<${c.html_url}|${c.sha.slice(0, 8)}>\` ${prLink}`;
     })
     .join('\n');

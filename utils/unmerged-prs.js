@@ -1,4 +1,5 @@
 const { getOctokit } = require('./octokit');
+const { escapeSlackText } = require('./helpers');
 
 const {
   BLOCKS_RELEASE_LABEL,
@@ -7,9 +8,9 @@ const {
 } = require('../constants');
 
 const formatMessage = (pr) => {
-  return `* <${pr.html_url}|#${pr.number}>${pr.draft ? ' (*DRAFT*)' : ''} - ${
-    pr.title.split(/[\r\n]/, 1)[0]
-  }`;
+  return `* <${pr.html_url}|#${pr.number}>${pr.draft ? ' (*DRAFT*)' : ''} - ${escapeSlackText(
+    pr.title.split(/[\r\n]/, 1)[0],
+  )}`;
 };
 
 function getReleaseBlockers(prs) {
