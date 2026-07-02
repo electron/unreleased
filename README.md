@@ -155,5 +155,6 @@ If you would like to use `unreleased`, there are several environment variables y
 * `REPO_NAME` - the name of the repository to run audits in, e.g. `electron`.
 * `UNRELEASED_GITHUB_APP_CREDS` - private key credentials generated for a GitHub App (required).
 * `SLACK_BOT_TOKEN` - the token that will be used to post audit result into a Slack workspace channel (required).
+* `SLACK_SIGNING_SECRET` - the signing secret from your Slack app's **Basic Information → App Credentials**, used to verify that slash-command requests originate from Slack (required).
 * `BLOCKS_RELEASE_LABEL` - the GitHub label used to denote unmerged pull requests that should block a release (default is `blocks-release`).
 * `AUDIT_POST_CHANNEL` - the Slack workspace channel in which to post audit results.
