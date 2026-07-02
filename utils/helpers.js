@@ -7,6 +7,7 @@ const {
   REPO_NAME,
   RELEASE_BRANCH_PATTERN,
   SLACK_BOT_TOKEN,
+  SLACK_SIGNING_SECRET,
 } = require('../constants');
 const { getOctokit } = require('./octokit');
 
@@ -152,6 +153,45 @@ function timingSafeEqual(a, b) {
   return crypto.timingSafeEqual(bufferA, bufferB);
 }
 
+const SLACK_SIGNATURE_VERSION = 'v0';
+const MAX_REQUEST_AGE_SECONDS = 60 * 5; // reject anything older than 5 minutes
+
+// Express middleware verifying that an incoming request was signed by Slack.
+// See https://docs.slack.dev/authentication/verifying-requests-from-slack
+function verifySlackRequest(req, res, next) {
+  if (!SLACK_SIGNING_SECRET) {
+    console.error('SLACK_SIGNING_SECRET is not configured');
+    return res.status(500).end();
+  }
+
+  const signature = req.headers['x-slack-signature'];
+  const timestamp = req.headers['x-slack-request-timestamp'];
+
+  if (!signature || !timestamp) {
+    return res.status(401).end('Unauthorized');
+  }
+
+  // Guard against replay attacks using a stale (or future) timestamp.
+  const age = Math.floor(Date.now() / 1000) - Number(timestamp);
+  if (!Number.isFinite(age) || Math.abs(age) > MAX_REQUEST_AGE_SECONDS) {
+    return res.status(401).end('Unauthorized');
+  }
+
+  // The `verify` hook stashes the unparsed body on req.rawBody.
+  const rawBody = Buffer.isBuffer(req.rawBody) ? req.rawBody : Buffer.alloc(0);
+  const basestring = `${SLACK_SIGNATURE_VERSION}:${timestamp}:${rawBody}`;
+  const expected = `${SLACK_SIGNATURE_VERSION}=${crypto
+    .createHmac('sha256', SLACK_SIGNING_SECRET)
+    .update(basestring)
+    .digest('hex')}`;
+
+  if (!timingSafeEqual(signature, expected)) {
+    return res.status(401).end('Unauthorized');
+  }
+
+  return next();
+}
+
 module.exports = {
   fetchInitiator,
   getSemverForCommitRange,
@@ -162,4 +202,5 @@ module.exports = {
   releaseIsDraft,
   SEMVER_TYPE,
   timingSafeEqual,
+  verifySlackRequest,
 };
