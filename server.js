@@ -20,12 +20,20 @@ const {
   postToSlack,
   SEMVER_TYPE,
   timingSafeEqual,
+  verifySlackRequest,
 } = require('./utils/helpers');
 const { getOctokit } = require('./utils/octokit');
 
 const app = express();
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+
+// Capture the raw request body as a Buffer so Slack slash-command signatures can
+// be verified against exactly the bytes Slack signed. See verifySlackRequest.
+function rawBodySaver(req, res, buf) {
+  req.rawBody = buf;
+}
+
+app.use(express.urlencoded({ extended: true, verify: rawBodySaver }));
+app.use(express.json({ verify: rawBodySaver }));
 
 app.use(express.static('public'));
 
@@ -65,7 +73,7 @@ app.get('/verify-semver', async (req, res) => {
   }
 });
 
-app.post('/verify-semver', async (req, res) => {
+app.post('/verify-semver', verifySlackRequest, async (req, res) => {
   res.status(200).end();
 
   const branches = await getSupportedBranches();
@@ -118,7 +126,7 @@ app.post('/verify-semver', async (req, res) => {
 
 // Check for pull requests targeting a specified release branch
 // that have not yet been merged.
-app.post('/unmerged', async (req, res) => {
+app.post('/unmerged', verifySlackRequest, async (req, res) => {
   const branches = await getSupportedBranches();
   const branch = req.body.text;
 
@@ -182,7 +190,7 @@ app.post('/unmerged', async (req, res) => {
 
 // Check for pull requests which have been merged to main and labeled
 // with target/BRANCH_NAME that trop failed for and which still need manual backports.
-app.post('/needs-manual', async (req, res) => {
+app.post('/needs-manual', verifySlackRequest, async (req, res) => {
   const branches = await getSupportedBranches();
   const REMIND = 'remind';
 
@@ -317,7 +325,7 @@ app.get('/unreleased', async (req, res) => {
 
 // Check for commits which have been merged to a release branch but
 // not been released in a beta or stable.
-app.post('/unreleased', async (req, res) => {
+app.post('/unreleased', verifySlackRequest, async (req, res) => {
   const branches = await getSupportedBranches();
   const branch = req.body.text;
 
@@ -399,7 +407,7 @@ app.post('/unreleased', async (req, res) => {
 
 // Combines checks for all PRs that either need manual backport to a given
 // release line or which are targeting said line and haven't been merged.
-app.post('/audit-pre-release', async (req, res) => {
+app.post('/audit-pre-release', verifySlackRequest, async (req, res) => {
   const branches = await getSupportedBranches();
   const branch = req.body.text;
 
