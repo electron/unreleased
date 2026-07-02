@@ -142,6 +142,12 @@ const postToSlack = async (data, postUrl) => {
 // crypto.timingSafeEqual comparison of `b.length`, so an
 // attacker can't change `a.length` to estimate `b.length`
 function timingSafeEqual(a, b) {
+  // Fail closed when the configured secret `b` is absent or empty so a
+  // blank/unset credential can never be interpreted as a valid match.
+  if (typeof b !== 'string' || b.length === 0) {
+    return false;
+  }
+
   const bufferA = Buffer.from(a, 'utf-8');
   const bufferB = Buffer.from(b, 'utf-8');
 
