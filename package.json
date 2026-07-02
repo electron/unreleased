@@ -33,7 +33,6 @@
     "@electron/github-app-auth": "^3.0.0",
     "@octokit/rest": "^22.0.0",
     "@slack/web-api": "^6.10.0",
-    "body-parser": "^2.2.1",
     "express": "^5.0.1"
   },
   "devDependencies": {
