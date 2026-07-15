@@ -13,7 +13,9 @@ const { escapeSlackText } = require('./helpers');
 async function searchIssues(search) {
   const octokit = await getOctokit();
   const { data } = await octokit.search.issuesAndPullRequests({
-    q: `${[...Object.entries(search)].map(([k, v]) => `${k}:${v}`).join('+')}`,
+    q: `${Object.entries(search)
+      .map(([k, v]) => `${k}:${v}`)
+      .join('+')}`,
   });
   return data.items;
 }

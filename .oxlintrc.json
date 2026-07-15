@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "env": {
+    "node": true,
+    "commonjs": true,
+    "es2021": true
+  },
+  "categories": {
+    "correctness": "error"
+  }
+}
