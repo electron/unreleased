@@ -7,6 +7,7 @@ const {
   REPO_NAME,
   RELEASE_BRANCH_PATTERN,
   SLACK_BOT_TOKEN,
+  SLACK_SIGNING_SECRET,
 } = require('../constants');
 const { getOctokit } = require('./octokit');
 
@@ -67,6 +68,20 @@ async function getSemverForCommitRange(commits, branch) {
   }
 
   return resultantSemver;
+}
+
+// Escape Slack mrkdwn control characters in untrusted, GitHub-sourced text
+// (PR titles, commit messages, usernames) before it is interpolated into a
+// Slack message. Slack renders posted text as mrkdwn, so an attacker-supplied
+// value could otherwise inject deceptive links (`<url|label>`), broadcast
+// pings (`<!channel>`/`<!here>`), or other active markup. Escaping `&`, `<`
+// and `>` neutralizes all of these while leaving ordinary text intact.
+// See https://docs.slack.dev/messaging/formatting-message-text#escaping
+function escapeSlackText(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
 // Add a live PR link to a given commit.
@@ -198,6 +213,12 @@ const postToSlack = async (data, postUrl) => {
 // crypto.timingSafeEqual comparison of `b.length`, so an
 // attacker can't change `a.length` to estimate `b.length`
 function timingSafeEqual(a, b) {
+  // Fail closed when the configured secret `b` is absent or empty so a
+  // blank/unset credential can never be interpreted as a valid match.
+  if (typeof b !== 'string' || b.length === 0) {
+    return false;
+  }
+
   const bufferA = Buffer.from(a, 'utf-8');
   const bufferB = Buffer.from(b, 'utf-8');
 
@@ -209,7 +230,47 @@ function timingSafeEqual(a, b) {
   return crypto.timingSafeEqual(bufferA, bufferB);
 }
 
+const SLACK_SIGNATURE_VERSION = 'v0';
+const MAX_REQUEST_AGE_SECONDS = 60 * 5; // reject anything older than 5 minutes
+
+// Express middleware verifying that an incoming request was signed by Slack.
+// See https://docs.slack.dev/authentication/verifying-requests-from-slack
+function verifySlackRequest(req, res, next) {
+  if (!SLACK_SIGNING_SECRET) {
+    console.error('SLACK_SIGNING_SECRET is not configured');
+    return res.status(500).end();
+  }
+
+  const signature = req.headers['x-slack-signature'];
+  const timestamp = req.headers['x-slack-request-timestamp'];
+
+  if (!signature || !timestamp) {
+    return res.status(401).end('Unauthorized');
+  }
+
+  // Guard against replay attacks using a stale (or future) timestamp.
+  const age = Math.floor(Date.now() / 1000) - Number(timestamp);
+  if (!Number.isFinite(age) || Math.abs(age) > MAX_REQUEST_AGE_SECONDS) {
+    return res.status(401).end('Unauthorized');
+  }
+
+  // The `verify` hook stashes the unparsed body on req.rawBody.
+  const rawBody = Buffer.isBuffer(req.rawBody) ? req.rawBody : Buffer.alloc(0);
+  const basestring = `${SLACK_SIGNATURE_VERSION}:${timestamp}:${rawBody}`;
+  const expected = `${SLACK_SIGNATURE_VERSION}=${crypto
+    .createHmac('sha256', SLACK_SIGNING_SECRET)
+    .update(basestring)
+    .digest('hex')}`;
+
+  if (!timingSafeEqual(signature, expected)) {
+    return res.status(401).end('Unauthorized');
+  }
+
+  return next();
+}
+
 module.exports = {
+  escapeSlackText,
   fetchInitiator,
   getReleaseBranches,
   getSemverForCommitRange,
@@ -220,4 +281,5 @@ module.exports = {
   releaseIsDraft,
   SEMVER_TYPE,
   timingSafeEqual,
+  verifySlackRequest,
 };

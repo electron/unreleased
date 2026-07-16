@@ -1,5 +1,6 @@
 const { ORGANIZATION_NAME, REPO_NAME } = require('../constants');
 const { getOctokit } = require('./octokit');
+const { escapeSlackText } = require('./helpers');
 
 // Fetch issues matching the given search criteria.
 // e.g.
@@ -12,7 +13,9 @@ const { getOctokit } = require('./octokit');
 async function searchIssues(search) {
   const octokit = await getOctokit();
   const { data } = await octokit.search.issuesAndPullRequests({
-    q: `${[...Object.entries(search)].map(([k, v]) => `${k}:${v}`).join('+')}`,
+    q: `${Object.entries(search)
+      .map(([k, v]) => `${k}:${v}`)
+      .join('+')}`,
   });
   return data.items;
 }
@@ -41,10 +44,11 @@ function buildNeedsManualPRsMessage(branch, prs, shouldRemind) {
 
   let formattedPRs = prs
     .map((c) => {
-      let line = `* <${c.html_url}|#${c.number}> - ${
-        c.title.split(/[\r\n]/, 1)[0]
-      }`;
-      if (shouldRemind) line += ` (<@${c.user.login.toLowerCase()}>)`;
+      let line = `* <${c.html_url}|#${c.number}> - ${escapeSlackText(
+        c.title.split(/[\r\n]/, 1)[0],
+      )}`;
+      if (shouldRemind)
+        line += ` (<@${escapeSlackText(c.user.login.toLowerCase())}>)`;
       return line;
     })
     .join('\n');

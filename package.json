@@ -4,10 +4,10 @@
   "private": true,
   "description": "Checks for and reports commits unreleased for all currently supported branches.",
   "scripts": {
-    "eslint:format": "eslint --fix '**/*.js'",
-    "eslint:lint": "eslint '**/*.js'",
-    "lint": "yarn prettier:lint && yarn eslint:lint",
+    "lint": "yarn prettier:lint && yarn oxlint:lint",
     "lint-staged": "lint-staged",
+    "oxlint:format": "oxlint --fix",
+    "oxlint:lint": "oxlint",
     "prepare": "husky",
     "prettier:format": "prettier --write '**/*.js'",
     "prettier:lint": "prettier --check '**/*.js'",
@@ -33,20 +33,18 @@
     "@electron/github-app-auth": "^3.0.0",
     "@octokit/rest": "^22.0.0",
     "@slack/web-api": "^6.10.0",
-    "body-parser": "^2.2.1",
     "express": "^5.0.1"
   },
   "devDependencies": {
     "@octokit/graphql": "^9.0.0",
-    "eslint": "^9.12.0",
-    "globals": "^15.11.0",
     "husky": "^9.1.6",
     "lint-staged": "^16.2.7",
+    "oxlint": "^1.71.0",
     "prettier": "^3.3.3"
   },
   "lint-staged": {
     "**/*.js": [
-      "eslint --fix",
+      "oxlint --fix",
       "prettier --write"
     ]
   },
