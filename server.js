@@ -14,6 +14,7 @@ const {
 } = require('./utils/needs-manual-prs');
 const {
   fetchInitiator,
+  getReleaseBranches,
   getSemverForCommitRange,
   getSupportedBranches,
   isInvalidBranch,
@@ -49,7 +50,7 @@ app.get('/verify-semver', async (req, res) => {
 
   const { branch } = req.query;
 
-  const branches = await getSupportedBranches();
+  const branches = await getReleaseBranches();
   if (isInvalidBranch(branches, branch)) {
     res.status(400).json({ error: `${branch} is not a valid branch` });
     return;
@@ -76,7 +77,7 @@ app.get('/verify-semver', async (req, res) => {
 app.post('/verify-semver', verifySlackRequest, async (req, res) => {
   res.status(200).end();
 
-  const branches = await getSupportedBranches();
+  const branches = await getReleaseBranches();
   const branch = req.body.text;
 
   const initiator = await fetchInitiator(req);
@@ -127,7 +128,6 @@ app.post('/verify-semver', verifySlackRequest, async (req, res) => {
 // Check for pull requests targeting a specified release branch
 // that have not yet been merged.
 app.post('/unmerged', verifySlackRequest, async (req, res) => {
-  const branches = await getSupportedBranches();
   const branch = req.body.text;
 
   const initiator = await fetchInitiator(req);
@@ -135,7 +135,7 @@ app.post('/unmerged', verifySlackRequest, async (req, res) => {
     `${initiator.name} initiated unmerged audit for branch: ${branch}`,
   );
 
-  if (branch !== 'all' && isInvalidBranch(branches, branch)) {
+  if (branch !== 'all' && isInvalidBranch(await getReleaseBranches(), branch)) {
     console.error(`${branch} is not a valid branch`);
     await postToSlack(
       {
@@ -150,7 +150,8 @@ app.post('/unmerged', verifySlackRequest, async (req, res) => {
   console.log(`Auditing unmerged PRs on branch: ${branch}`);
 
   try {
-    const branchesToCheck = branch === 'all' ? branches : [branch];
+    const branchesToCheck =
+      branch === 'all' ? await getSupportedBranches() : [branch];
 
     let messages = [];
     for (const branch of branchesToCheck) {
@@ -191,7 +192,6 @@ app.post('/unmerged', verifySlackRequest, async (req, res) => {
 // Check for pull requests which have been merged to main and labeled
 // with target/BRANCH_NAME that trop failed for and which still need manual backports.
 app.post('/needs-manual', verifySlackRequest, async (req, res) => {
-  const branches = await getSupportedBranches();
   const REMIND = 'remind';
 
   let [branch, author, remind] = req.body.text.split(' ');
@@ -209,7 +209,7 @@ app.post('/needs-manual', verifySlackRequest, async (req, res) => {
     `${initiator.name} initiated needs-manual audit for branch: ${branch}`,
   );
 
-  if (branch !== 'all' && isInvalidBranch(branches, branch)) {
+  if (branch !== 'all' && isInvalidBranch(await getReleaseBranches(), branch)) {
     console.error(`${branch} is not a valid branch`);
     await postToSlack(
       {
@@ -241,7 +241,8 @@ app.post('/needs-manual', verifySlackRequest, async (req, res) => {
   }
 
   try {
-    const branchesToCheck = branch === 'all' ? branches : [branch];
+    const branchesToCheck =
+      branch === 'all' ? await getSupportedBranches() : [branch];
 
     let messages = [];
     for (const branch of branchesToCheck) {
@@ -296,15 +297,16 @@ app.get('/unreleased', async (req, res) => {
   const { branch } = req.query;
 
   try {
-    const branches = await getSupportedBranches();
     const result = {};
 
     if (branch === 'all') {
+      const branches = await getSupportedBranches();
       for (const b of branches) {
         const { commits } = await fetchUnreleasedCommits(b);
         result[b] = commits;
       }
     } else {
+      const branches = await getReleaseBranches();
       if (isInvalidBranch(branches, branch)) {
         return res
           .status(400)
@@ -326,13 +328,13 @@ app.get('/unreleased', async (req, res) => {
 // Check for commits which have been merged to a release branch but
 // not been released in a beta or stable.
 app.post('/unreleased', verifySlackRequest, async (req, res) => {
-  const branches = await getSupportedBranches();
   const branch = req.body.text;
 
   const initiator = await fetchInitiator(req);
 
   // Allow for manual batch audit of all supported release branches.
   if (branch === 'all') {
+    const branches = await getSupportedBranches();
     console.log(
       `${initiator.name} triggered audit for all supported release branches`,
     );
@@ -367,6 +369,8 @@ app.post('/unreleased', verifySlackRequest, async (req, res) => {
   console.log(
     `${initiator.name} initiated unreleased commit audit for branch: ${branch}`,
   );
+
+  const branches = await getReleaseBranches();
 
   if (isInvalidBranch(branches, branch)) {
     console.error(`${branch} is not a valid branch`);
@@ -408,7 +412,7 @@ app.post('/unreleased', verifySlackRequest, async (req, res) => {
 // Combines checks for all PRs that either need manual backport to a given
 // release line or which are targeting said line and haven't been merged.
 app.post('/audit-pre-release', verifySlackRequest, async (req, res) => {
-  const branches = await getSupportedBranches();
+  const branches = await getReleaseBranches();
   const branch = req.body.text;
 
   const initiator = await fetchInitiator(req);
