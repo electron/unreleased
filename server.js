@@ -27,6 +27,9 @@ const { getOctokit } = require('./utils/octokit');
 
 const app = express();
 
+// Liveness/readiness probe for ionic. Unauthenticated and does no I/O.
+app.get('/healthz', (req, res) => res.send('ok'));
+
 // Capture the raw request body as a Buffer so Slack slash-command signatures can
 // be verified against exactly the bytes Slack signed. See verifySlackRequest.
 function rawBodySaver(req, res, buf) {
