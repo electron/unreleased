@@ -3,7 +3,9 @@
 # a single stage that installs production deps and copies the runtime files.
 FROM node:22-alpine
 WORKDIR /app
-RUN corepack enable
+# tini: see ENTRYPOINT.
+RUN apk add --no-cache tini \
+ && corepack enable
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn/ ./.yarn/
 # Production deps only; `focus` also works on a single-workspace repo.
@@ -22,4 +24,8 @@ ENV NODE_ENV=production \
     HOME=/tmp
 EXPOSE 8080
 # No HEALTHCHECK: Kubernetes probes /healthz instead.
+# tini runs as PID 1 and forwards SIGTERM to the app, which has no SIGTERM
+# handler of its own; without it the kernel ignores the signal and every pod
+# waits out the 30s grace period before being SIGKILLed.
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "server.js"]
