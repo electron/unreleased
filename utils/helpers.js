@@ -219,8 +219,17 @@ function timingSafeEqual(a, b) {
     return false;
   }
 
-  const bufferA = Buffer.from(a, 'utf-8');
   const bufferB = Buffer.from(b, 'utf-8');
+
+  // A missing or non-string `a` (e.g. no Authorization header) is a
+  // mismatch, not an error. Still do the dummy compare so the timing
+  // matches the length-mismatch path.
+  if (typeof a !== 'string') {
+    crypto.timingSafeEqual(bufferB, bufferB);
+    return false;
+  }
+
+  const bufferA = Buffer.from(a, 'utf-8');
 
   if (bufferA.length !== bufferB.length) {
     crypto.timingSafeEqual(bufferB, bufferB);
