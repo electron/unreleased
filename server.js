@@ -19,6 +19,7 @@ const {
   getSupportedBranches,
   isInvalidBranch,
   postToSlack,
+  reportSlashCommandError,
   SEMVER_TYPE,
   timingSafeEqual,
   verifySlackRequest,
@@ -131,6 +132,8 @@ app.post('/verify-semver', verifySlackRequest, async (req, res) => {
 // Check for pull requests targeting a specified release branch
 // that have not yet been merged.
 app.post('/unmerged', verifySlackRequest, async (req, res) => {
+  res.status(200).end();
+
   const branch = req.body.text;
 
   const initiator = await fetchInitiator(req);
@@ -147,7 +150,7 @@ app.post('/unmerged', verifySlackRequest, async (req, res) => {
       },
       req.body.response_url,
     );
-    return res.status(200).end();
+    return;
   }
 
   console.log(`Auditing unmerged PRs on branch: ${branch}`);
@@ -188,13 +191,13 @@ app.post('/unmerged', verifySlackRequest, async (req, res) => {
       req.body.response_url,
     );
   }
-
-  return res.status(200).end();
 });
 
 // Check for pull requests which have been merged to main and labeled
 // with target/BRANCH_NAME that trop failed for and which still need manual backports.
 app.post('/needs-manual', verifySlackRequest, async (req, res) => {
+  res.status(200).end();
+
   const REMIND = 'remind';
 
   let [branch, author, remind] = req.body.text.split(' ');
@@ -221,7 +224,7 @@ app.post('/needs-manual', verifySlackRequest, async (req, res) => {
       },
       req.body.response_url,
     );
-    return res.status(200).end();
+    return;
   }
 
   if (author) {
@@ -237,7 +240,7 @@ app.post('/needs-manual', verifySlackRequest, async (req, res) => {
         },
         req.body.response_url,
       );
-      return res.status(200).end();
+      return;
     }
 
     console.log(`Scoping needs-manual PRs to those opened by ${author}`);
@@ -283,8 +286,6 @@ app.post('/needs-manual', verifySlackRequest, async (req, res) => {
       req.body.response_url,
     );
   }
-
-  return res.status(200).end();
 });
 
 app.get('/unreleased', async (req, res) => {
@@ -331,6 +332,8 @@ app.get('/unreleased', async (req, res) => {
 // Check for commits which have been merged to a release branch but
 // not been released in a beta or stable.
 app.post('/unreleased', verifySlackRequest, async (req, res) => {
+  res.status(200).end();
+
   const branch = req.body.text;
 
   const initiator = await fetchInitiator(req);
@@ -366,7 +369,7 @@ app.post('/unreleased', verifySlackRequest, async (req, res) => {
       }
     }
 
-    return res.status(200).end();
+    return;
   }
 
   console.log(
@@ -384,7 +387,7 @@ app.post('/unreleased', verifySlackRequest, async (req, res) => {
       },
       req.body.response_url,
     );
-    return res.status(200).end();
+    return;
   }
 
   try {
@@ -408,13 +411,13 @@ app.post('/unreleased', verifySlackRequest, async (req, res) => {
       req.body.response_url,
     );
   }
-
-  return res.status(200).end();
 });
 
 // Combines checks for all PRs that either need manual backport to a given
 // release line or which are targeting said line and haven't been merged.
 app.post('/audit-pre-release', verifySlackRequest, async (req, res) => {
+  res.status(200).end();
+
   const branches = await getReleaseBranches();
   const branch = req.body.text;
 
@@ -432,7 +435,7 @@ app.post('/audit-pre-release', verifySlackRequest, async (req, res) => {
       },
       req.body.response_url,
     );
-    return res.status(200).end();
+    return;
   }
 
   try {
@@ -479,9 +482,9 @@ app.post('/audit-pre-release', verifySlackRequest, async (req, res) => {
       req.body.response_url,
     );
   }
-
-  return res.status(200).end();
 });
+
+app.use(reportSlashCommandError);
 
 const listener = app.listen(process.env.PORT, () => {
   console.log(`release-branch-auditor listening on ${listener.address().port}`);
