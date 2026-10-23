@@ -207,6 +207,30 @@ const postToSlack = async (data, postUrl) => {
   });
 };
 
+// Express error handler for Slack slash commands. Those handlers send their
+// 200 acknowledgement before doing any work (Slack requires one within 3
+// seconds), so an error thrown afterwards can no longer be returned in the
+// HTTP response. Report it back to the user via response_url instead.
+async function reportSlashCommandError(err, req, res, next) {
+  const responseUrl = req.body?.response_url;
+  if (!res.headersSent || !responseUrl) {
+    return next(err);
+  }
+
+  console.error(err);
+  try {
+    await postToSlack(
+      {
+        response_type: 'ephemeral',
+        text: `Error: ${err.message}`,
+      },
+      responseUrl,
+    );
+  } catch (postErr) {
+    console.error(postErr);
+  }
+}
+
 // NOTE: This assumes `a` is a user-controlled string and
 // `b` is our sensitive value. This ensures that even in
 // length mismatch cases this function does a
@@ -288,6 +312,7 @@ module.exports = {
   linkifyPRs,
   postToSlack,
   releaseIsDraft,
+  reportSlashCommandError,
   SEMVER_TYPE,
   timingSafeEqual,
   verifySlackRequest,
